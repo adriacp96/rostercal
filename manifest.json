@@ -1,0 +1,18 @@
+{
+  "short_name": "RosterCal",
+  "name": "RosterCal — Emirates Cabin Crew Edition",
+  "icons": [
+    {
+      "src": "calendar.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#030712",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "The privacy-first client-side Emirates Roster to Calendar sync engine."
+}

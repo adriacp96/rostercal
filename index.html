@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RosterCal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="text-slate-100 min-h-screen lg:h-screen lg:overflow-x-hidden font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+  <!-- Navbar -->
+  <header class="border-b border-slate-800 bg-slate-950/60 backdrop-blur-md shrink-0 z-50 shadow-lg shadow-black/20">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 flex items-center justify-center">
+          <img src="calendar.png" alt="RosterCal Logo" class="w-8 h-8 object-contain">
+        </div>
+        <h1 class="text-xl font-extrabold tracking-tight animated-blue-text bg-clip-text text-transparent">RosterCal</h1>
+      </div>
+      
+      <div class="flex items-center space-x-2 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] text-emerald-300 font-medium shadow-md shadow-emerald-950/50 animated-emerald-badge">
+        <span>🔒 100% Client-Side Private</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-3 flex-grow flex flex-col relative w-full min-h-0">
+    
+    <!-- Standard UI (Wrapped for view-switching) -->
+    <div id="standard-ui-view" class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow items-stretch w-full min-h-0">
+      
+      <!-- Input Column (Left 5 Cols) -->
+      <div class="lg:col-span-5 space-y-3 flex flex-col h-full min-h-0">
+        <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-3.5 shadow-xl backdrop-blur-sm flex flex-col flex-grow h-full justify-between min-h-0">
+          
+          <div class="flex flex-col flex-grow space-y-2.5 min-h-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-700/80 pb-2.5 shrink-0">
+              <div>
+                <h2 class="text-xs font-bold tracking-wider uppercase text-slate-200">1. Input Roster Data</h2>
+                <p class="text-[10px] text-slate-400">Paste Text or CSV</p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 shrink-0">
+              <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer"
+                 class="flex-1 h-[32px] bg-slate-900/90 hover:bg-slate-700/80 text-sky-400 hover:text-sky-200 border border-slate-700/80 hover:border-slate-600 font-medium px-2.5 rounded-xl transition flex items-center justify-center space-x-1.5 text-[11px] shadow-sm cursor-pointer group">
+                <span>🌐 Open Emirates Crew Portal</span>
+                <span class="text-slate-500 group-hover:text-slate-300 transition-colors">↗</span>
+              </a>
+              <button id="btn-info" type="button" title="How to download your roster"
+                 class="w-[32px] h-[32px] bg-slate-900/90 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/80 hover:border-slate-600 font-semibold rounded-xl transition flex items-center justify-center text-xs shadow-sm cursor-pointer shrink-0">
+                ℹ️
+              </button>
+            </div>
+            
+            <div class="flex border-b border-slate-700/80 text-xs font-medium shrink-0">
+              <button id="tab-text" class="pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition">Raw Text Portal</button>
+              <button id="tab-file" class="pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition">Upload CSV/File</button>
+            </div>
+
+            <div id="panel-text" class="block relative flex-grow flex flex-col min-h-0">
+              <textarea id="raw-roster-input" 
+                class="w-full h-full flex-grow bg-slate-950/80 border border-slate-700/80 rounded-xl p-2.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner resize-none min-h-0"
+                placeholder="Paste raw airline portal text here..."></textarea>
+              
+              <div id="paste-success-overlay" class="absolute inset-0 bg-emerald-950/40 backdrop-blur-md rounded-xl border border-emerald-500/50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-500">
+                <div class="text-emerald-300 font-bold text-xs uppercase tracking-wider flex items-center space-x-2 bg-emerald-900/80 px-3 py-1.5 rounded-lg shadow-lg border border-emerald-500/40">
+                  <span>✅ Roster Pasted Successfully</span>
+                </div>
+              </div>
+
+              <div id="clear-success-overlay" class="absolute inset-0 bg-red-950/40 backdrop-blur-md rounded-xl border border-red-500/50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-500">
+                <div class="text-red-300 font-bold text-xs uppercase tracking-wider flex items-center space-x-2 bg-red-900/80 px-3 py-1.5 rounded-lg shadow-lg border border-red-500/40">
+                  <span>🗑️ Roster Cleared</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="panel-file" class="hidden flex-grow flex flex-col justify-center min-h-0">
+              <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-4 cursor-pointer transition bg-slate-950/40 group h-full">
+                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📂</span>
+                <span class="text-xs font-medium text-slate-300">Click to upload text or CSV roster</span>
+                <input type="file" id="file-input" accept=".csv,.txt" class="hidden">
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2.5 pt-2.5 shrink-0">
+            <div class="flex items-center gap-2">
+              <button id="btn-parse" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-3 rounded-xl shadow-lg shadow-blue-900/30 transition flex justify-center items-center space-x-2 cursor-pointer text-xs tracking-wider uppercase">
+                <span>Parse & Preview Roster</span>
+              </button>
+              <button id="btn-clear-box" type="button" title="Clear text box"
+                class="h-[34px] bg-red-600/90 hover:bg-red-500 text-white font-semibold px-2.5 rounded-xl shadow-lg shadow-red-950/30 transition flex items-center justify-center cursor-pointer text-xs uppercase tracking-wider">
+                <span>🗑️ Clear</span>
+              </button>
+            </div>
+
+            <div class="border-t border-slate-700/60 pt-2 text-center">
+              <p class="text-[10px] text-slate-400 mb-1">Drag this button to your bookmarks bar to easily copy your roster:</p>
+              <a href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20main%20container');return;%7Dconst%20clonedContainer=mainContainer.cloneNode(true);const%20svgToRemove=clonedContainer.querySelector('%23SVGContainer');if(svgToRemove)%7BsvgToRemove.remove();%7Dconst%20stylesToRemove=clonedContainer.querySelectorAll('style');stylesToRemove.forEach(style=%3Estyle.remove());const%20cleanedText=clonedContainer.innerText.split('%5Cn').filter(line=%3Eline.trim()!=='').join('%5Cn');navigator.clipboard.writeText(cleanedText).then(()=%3Ealert('Roster%20copied%20as%20plain%20text.')).catch(err=%3E%7Bconsole.error(err);%7D);%7D)();" 
+                 class="inline-block bg-slate-900 hover:bg-slate-700 text-slate-200 font-medium py-1 px-2.5 rounded-full cursor-grab text-[10px] transition border border-slate-700 shadow-sm"
+                 title="Drag and drop to your bookmarks bar">
+                🔖 Copy Roster
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Preview & Export Column (Right 7 Cols) -->
+      <div class="lg:col-span-7 space-y-3 flex flex-col h-full min-h-0">
+        <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between flex-grow h-full backdrop-blur-sm min-h-0">
+          
+          <div class="flex flex-col flex-grow min-h-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5 border-b border-slate-700/80 pb-2.5 shrink-0">
+              <div>
+                <h2 class="text-xs font-bold tracking-wider uppercase text-slate-200">2. Review & Edit Schedule</h2>
+                <p id="event-count" class="text-[10px] text-slate-400 mt-0.5">0 events ready for calendar sync</p>
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                <div class="flex items-center space-x-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-700/80 shadow-inner">
+                  <button id="btn-view-list" class="px-2 py-1 rounded-md font-semibold bg-blue-600 text-white transition cursor-pointer flex items-center space-x-1 text-[11px] shadow-sm">
+                    <span>📋</span><span>List</span>
+                  </button>
+                  <button id="btn-view-month" class="px-2 py-1 rounded-md font-semibold text-slate-400 hover:text-white transition cursor-pointer flex items-center space-x-1 text-[11px]">
+                    <span>📅</span><span>Month</span>
+                  </button>
+                </div>
+
+                <select id="tz-display-mode" class="bg-slate-900/90 border border-slate-700/80 rounded-lg px-2 py-1 text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer shadow-sm text-[11px] font-medium">
+                  <option value="LOCAL">Local Airport Time</option>
+                  <option value="UTC">UTC / Zulu Time</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="list-toolbar" class="flex items-center justify-between px-1 mb-1.5 text-xs text-slate-400 shrink-0">
+              <label class="flex items-center space-x-1.5 cursor-pointer select-none hover:text-slate-200 transition">
+                <input type="checkbox" id="toggle-all" checked class="rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 cursor-pointer w-3.5 h-3.5">
+                <span class="font-medium text-[10px]">Select All Events</span>
+              </label>
+              <span class="font-mono text-[9px] text-slate-500">Click row checkboxes to toggle sync</span>
+            </div>
+
+            <!-- LIST VIEW CONTAINER -->
+            <div id="list-view-container" class="block flex-grow flex flex-col min-h-0">
+              <div class="overflow-x-auto flex-grow overflow-y-auto pr-1 rounded-xl border border-slate-700/60 bg-slate-950/40 shadow-inner min-h-0">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="border-b border-slate-700/80 text-slate-400 text-[10px] font-bold uppercase tracking-wider sticky top-0 bg-slate-900/95 backdrop-blur z-10">
+                      <th class="py-2 px-2.5 w-7">Sync</th>
+                      <th class="py-2 px-2">Date</th>
+                      <th class="py-2 px-2">Duty / Flight</th>
+                      <th class="py-2 px-2">Route / Loc</th>
+                      <th class="py-2 px-2">Timings</th>
+                    </tr>
+                  </thead>
+                  <tbody id="roster-table-body" class="divide-y divide-slate-800/60">
+                    <tr id="empty-state">
+                      <td colspan="5" class="py-12 text-center text-slate-500">
+                        <div class="flex flex-col items-center justify-center space-y-1">
+                          <span class="text-2xl">🗓️</span>
+                          <p class="text-xs font-medium text-slate-400">No roster parsed yet. Paste your schedule on the left to preview.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- MONTH VIEW CONTAINER -->
+            <div id="month-view-container" class="hidden flex-grow flex flex-col min-h-0">
+              <div class="bg-slate-950/50 border border-slate-700/60 rounded-xl p-2.5 shadow-inner flex flex-col flex-grow min-h-0">
+                <div class="flex items-center justify-between mb-1.5 px-1 shrink-0 flex-wrap gap-1">
+                  <h3 id="month-view-title" class="text-xs font-bold text-slate-200 tracking-wide">Calendar Month View</h3>
+                  <div class="flex items-center space-x-2 text-[10px] text-slate-400">
+                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Flight</span></span>
+                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-violet-500"></span><span>Check-in</span></span>
+                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Duty</span></span>
+                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>All-Day / Off</span></span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase mb-1 border-b border-slate-800 pb-1 shrink-0">
+                  <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                </div>
+                <div id="calendar-grid-days" class="grid grid-cols-7 gap-1 flex-grow min-h-0"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="pt-2.5 border-t border-slate-700/80 mt-2.5 flex items-center justify-between gap-2 shrink-0">
+            <button id="btn-open-prefs" class="h-[34px] bg-slate-900/90 hover:bg-slate-700 text-slate-200 font-semibold px-3 rounded-xl border border-slate-700/80 shadow transition flex items-center justify-center space-x-1 text-xs whitespace-nowrap cursor-pointer">
+              <span>⚙️</span><span>Customise</span>
+            </button>
+            <button id="btn-export" disabled class="h-[34px] bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold px-3.5 rounded-xl shadow-lg shadow-emerald-950/40 border border-emerald-500/30 transition flex items-center justify-center space-x-1.5 cursor-pointer whitespace-nowrap text-xs uppercase tracking-wider">
+              <span>📥</span><span>Download .ics</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAGIC MODE OVERLAY (SPA background extraction View) -->
+    <div id="magic-mode-view" class="hidden fixed inset-0 z-[100] bg-transparent backdrop-blur-xl flex-col items-center justify-center p-4 md:p-12 animate-fade-in text-center">
+      
+      <!-- Aviation Animation (SVG) -->
+      <div class="relative w-full max-w-lg h-28 md:h-32 mb-6 flex justify-center items-center magic-item delay-100">
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-radar-sweep rounded-full blur-xl"></div>
+        <img src="success.gif" alt="Plane" class="absolute w-20 h-20 md:w-24 md:h-24 animate-takeoff drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] z-10" />
+      </div>
+      
+      <h2 class="text-2xl md:text-4xl font-extrabold text-blue-950 drop-shadow-sm tracking-wide mb-2 magic-item delay-200">Schedule Processed</h2>
+      <p id="magic-month-title" class="text-blue-800 font-bold mb-8 md:mb-10 uppercase tracking-widest text-xs md:text-sm magic-item delay-300">Listening for Roster Data...</p>
+      
+      <!-- Statistics Grid (Expanded to 6 columns) -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full max-w-6xl mb-10">
+        <!-- Flights -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-400">
+          <div class="text-2xl md:text-3xl mb-2">🛫</div>
+          <div id="stat-flights" class="text-2xl md:text-3xl font-extrabold text-blue-400">0</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Sectors</div>
+        </div>
+        <!-- Hours -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-500">
+          <div class="text-2xl md:text-3xl mb-2">⏱️</div>
+          <div id="stat-hours" class="text-2xl md:text-3xl font-extrabold text-violet-400">0h</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Block Hrs</div>
+        </div>
+        <!-- Layovers -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-600">
+          <div class="text-2xl md:text-3xl mb-2">🏨</div>
+          <div id="stat-layovers" class="text-2xl md:text-3xl font-extrabold text-amber-400">0</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Layovers</div>
+        </div>
+        <!-- Turnarounds -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-700">
+          <div class="text-2xl md:text-3xl mb-2">🔄</div>
+          <div id="stat-turnarounds" class="text-2xl md:text-3xl font-extrabold text-sky-400">0</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Turnarounds</div>
+        </div>
+        <!-- Days Off -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-800">
+          <div class="text-2xl md:text-3xl mb-2">🏖️</div>
+          <div id="stat-off" class="text-2xl md:text-3xl font-extrabold text-emerald-400">0</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Days Off</div>
+        </div>
+        <!-- Total Events -->
+        <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 md:p-5 text-center shadow-lg transform transition hover:scale-105 magic-item delay-900">
+          <div class="text-2xl md:text-3xl mb-2">📅</div>
+          <div id="stat-events" class="text-2xl md:text-3xl font-extrabold text-rose-400">0</div>
+          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">Total Events</div>
+        </div>
+      </div>
+      
+      <button id="magic-btn-export" disabled class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 md:px-12 md:py-5 rounded-full shadow-[0_0_40px_-10px_rgba(59,130,246,0.6)] border border-blue-400/50 transition-all transform hover:scale-105 flex items-center space-x-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed magic-item delay-1000">
+        <span class="text-xl md:text-2xl">📥</span>
+        <span class="text-sm md:text-lg uppercase tracking-wider">Download .ics Calendar</span>
+      </button>
+  
+      <button id="magic-btn-review" class="mt-8 text-xs text-slate-500 hover:text-white underline transition border-none bg-transparent cursor-pointer magic-item delay-1000">
+        Open detailed manual review
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Instructions Modal -->
+  <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
+      <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg font-bold p-1 cursor-pointer">✕</button>
+      <h3 class="text-lg font-bold text-white mb-2 border-b border-slate-700 pb-3 flex items-center space-x-2">
+        <span>✈️</span>
+        <span>Ready for take-off: Here's how to download your roster!</span>
+      </h3>
+      <ol class="space-y-4 my-6 text-sm text-slate-300 list-decimal list-inside leading-relaxed">
+        <li><span class="font-medium text-white">Login</span> to the Emirates Crew Portal.</li>
+        <li>Navigate to <span class="font-semibold text-white">Roster & Leave</span>.</li>
+        <li>Scroll to the right and tap on the <span class="font-semibold text-white">Print/Email</span> button.</li>
+        <li>When the roster popup is visible, copy the text and paste it into the RosterCal box.</li>
+      </ol>
+      <div class="mt-6 pt-4 border-t border-slate-700/80 flex justify-end">
+        <button id="btn-modal-got-it" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-5 py-2.5 rounded-lg shadow transition cursor-pointer">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customise Export Preferences Modal (Visually Beautiful & Intuitive) -->
+  <div id="prefs-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
+    <div class="bg-slate-800/95 border border-slate-700/80 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative text-left space-y-5 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3.5">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-lg">
+            ⚙️
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white tracking-wide">Display & Export Preferences</h3>
+            <p class="text-[11px] text-slate-400">Personalise how your schedule looks inside your calendar app</p>
+          </div>
+        </div>
+        <button id="btn-close-prefs" class="text-slate-400 hover:text-white transition text-xl font-bold px-2 py-1 rounded-lg hover:bg-slate-700/50 cursor-pointer">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        
+        <!-- CARD 1: General Calendar Settings -->
+        <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 space-y-2.5">
+          <div class="flex items-center space-x-2 text-xs font-bold text-blue-400 uppercase tracking-wider">
+            <span>📅</span><span>General Calendar</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-200 mb-1">Calendar File Name</label>
+            <input type="text" id="pref-cal-name" value="RosterCal" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-white font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner">
+            <p class="text-[10px] text-slate-400 mt-1">This name will appear as your schedule's title when imported into Apple or Google Calendar.</p>
+          </div>
+        </div>
+
+        <!-- CARD 2: Smart Timings & Tracking -->
+        <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center space-x-2 text-xs font-bold text-violet-400 uppercase tracking-wider">
+            <span>🛃</span><span>Smart Timings & Tracking</span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Check-in / Report Times</label>
+              <select id="pref-report-time" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer shadow-inner">
+                <option value="HOME_ONLY" selected>Homebase Only (DXB) [Default]</option>
+                <option value="ALL">All Flights (Home & Outstation)</option>
+                <option value="NONE">Do Not Generate Report Events</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Generates a 1-hour check-in and eGate briefing event right before departure.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Auto-Generate Ground Times</label>
+              <select id="pref-auto-layovers" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer shadow-inner">
+                <option value="true" selected>✅ Yes — Create Layovers / Turnarounds</option>
+                <option value="false">❌ No — Flights only</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Automatically calculates and outputs Layover (>4h) and Turnaround events.</p>
+            </div>
+
+            <div class="sm:col-span-2 pt-2">
+              <label class="block text-xs font-semibold text-slate-200 mb-1">FlightRadar24 Live Link</label>
+              <select id="pref-fr24-link" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer shadow-inner">
+                <option value="true" selected>✅ Yes — Include tracking URL</option>
+                <option value="false">❌ No — Hide tracking link</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Adds a clickable real-time flight tracking URL directly inside your calendar notes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: Event Naming & Formatting -->
+        <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center space-x-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            <span>🏷️</span><span>Event Naming & Formatting</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-semibold text-slate-200">Flight Title Format</label>
+                <span class="text-[10px] font-mono text-slate-400">Live Preview:</span>
+              </div>
+              <select id="pref-flight-title" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer shadow-inner mb-1.5">
+                <option value="CITY_IATA" selected>[City depart] (IATA) - [City arrival] (IATA)</option>
+                <option value="DEP_IATA_ARR_IATA">DEP (IATA) - END (IATA)</option>
+                <option value="LOCAL_CODES">Local Timings + [Flight Number]</option>
+              </select>
+              <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2 flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 font-medium">Sample Output:</span>
+                <span id="preview-flight-format" class="text-[11px] bg-blue-950/90 text-blue-300 border border-blue-800/60 px-2 py-0.5 rounded font-mono shadow-sm">✈️ Dubai (DXB) - London (LHR)</span>
+              </div>
+            </div>
+
+            <div class="pt-1 border-t border-slate-800">
+              <div class="flex items-center justify-between mb-1 mt-2">
+                <label class="block text-xs font-semibold text-slate-200">Duty / Training Title Format</label>
+                <span class="text-[10px] font-mono text-slate-400">Live Preview:</span>
+              </div>
+              <select id="pref-duty-title" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer shadow-inner mb-1.5">
+                <option value="EMOJI_TITLE" selected>[EMOJI] [TITLE]</option>
+                <option value="CODE_TITLE">[EMOJI] [CODE] - [TITLE]</option>
+              </select>
+              <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2 flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 font-medium">Sample Output:</span>
+                <span id="preview-duty-format" class="text-[11px] bg-amber-950/90 text-amber-300 border border-amber-800/60 px-2 py-0.5 rounded font-mono shadow-sm">🏨 Layover in LHR (24:30)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-3.5 border-t border-slate-700/80 flex items-center justify-between gap-2">
+        <button id="btn-reset-prefs" type="button" class="text-xs text-slate-400 hover:text-red-400 font-medium px-2 py-1.5 transition cursor-pointer">
+          ↻ Reset to Defaults
+        </button>
+        <button id="btn-save-prefs" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/30 transition cursor-pointer uppercase tracking-wider">
+          Apply & Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/30 py-2 text-center text-[10px] text-slate-500 font-medium tracking-wide shrink-0">
+    <p>Made with ❤️ by Adrià</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
