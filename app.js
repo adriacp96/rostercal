@@ -1,7 +1,7 @@
 /**
  * RosterCal — Emirates (EK) Cabin Crew Edition
  * Architecture: ES6 Modular Classes | 100% Client-Side Privacy
- * Features: Zero-Latency Instant Boot | Pure Math Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
+ * Features: Zero-Latency Instant Boot | Native IANA DST Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
  */
 
 const HOME_BASE = "DXB";
@@ -160,7 +160,7 @@ const BUILTIN_AIRPORTS = {
   ZRH: { icao: "LSZH", city: "Zurich", name: "Zurich Airport", iana: "Europe/Zurich", utc_offset: 1 }
 };
 
-// --- Built-in Instant Memory Duty Code Library (Updated Emojis: 🏠 🏖️ 🕒 📚) ---
+// --- Built-in Instant Memory Duty Code Library ---
 const BUILTIN_EVENT_CODES = {
   FLT:    { title: "Emirates Flight", emoji: "✈️", category: "flight" },
   EK:     { title: "Emirates Flight", emoji: "✈️", category: "flight" },
@@ -272,32 +272,32 @@ const BUILTIN_EVENT_CODES = {
   S17:    { title: "Standby from 17:00 (CC)", emoji: "⏳", category: "standby" },
   S21:    { title: "Standby from 21:00 (CC)", emoji: "⏳", category: "standby" },
   SAB700: { title: "Airport Standby (07:00)", emoji: "🛃", category: "standby" },
-  SD:     { title: "Stand Down Reserve", emoji: "🛋️", category: "standby" },
+  SD:     { title: "Stand Down Reserve", emoji: "🛋️", "category": "standby" },
   SO08:   { title: "Cross Qualification Standby (08:00)", emoji: "⏳", category: "standby" },
   SO21:   { title: "Cross Qualification Standby (21:00)", emoji: "⏳", category: "standby" },
-  STBY:   { title: "Standby Reserve", emoji: "⏳", category: "standby" },
-  DO:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  OFF:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  AL:     { title: "Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
-  FI:     { title: "Emergency Leave", emoji: "🏖️", category: "off", isAllDay: true },
-  FP:     { title: "Folga Pedida (Requested Day Off)", emoji: "🏠", category: "off", isAllDay: true },
-  LV:     { title: "Normal Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
-  NPA:    { title: "No Planned Assignment", emoji: "🏠", category: "off", isAllDay: true },
-  PSB:    { title: "Peer Support Basic Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  ROF:    { title: "Requested Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  RW:     { title: "Return to Work", emoji: "🏠", category: "off", isAllDay: true },
-  RWS:    { title: "Return to Work Supy", emoji: "🏠", category: "off", isAllDay: true },
-  VA:     { title: "Late / Overdue Vacation", emoji: "🏖️", category: "off", isAllDay: true },
-  XX:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  XXC:    { title: "Company Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  XXP:    { title: "Day Off Planning", emoji: "🏠", category: "off", isAllDay: true },
-  XXR:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  XXV:    { title: "Day Off (Visa Change)", emoji: "🏠", category: "off", isAllDay: true },
-  IV:     { title: "Office Interview", emoji: "👔", category: "general" },
-  O:      { title: "Office Duty", emoji: "🏢", category: "general" },
-  UIV:    { title: "US Visa Interview", emoji: "🛂", category: "general" },
-  UIV1:   { title: "US Visa Interview (AM)", emoji: "🛂", category: "general" },
-  YSA:    { title: "Service Assessment", emoji: "📋", category: "general" }
+  STBY:   { title: "Standby Reserve", emoji: "⏳", "category": "standby" },
+  DO:     { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  OFF:    { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  AL:     { title: "Annual Leave", emoji: "🏖️", "category": "off", isAllDay: true },
+  FI:     { title: "Emergency Leave", emoji: "🏖️", "category": "off", isAllDay: true },
+  FP:     { title: "Folga Pedida (Requested Day Off)", emoji: "🏠", "category": "off", isAllDay: true },
+  LV:     { title: "Normal Annual Leave", emoji: "🏖️", "category": "off", isAllDay: true },
+  NPA:    { title: "No Planned Assignment", emoji: "🏠", "category": "off", isAllDay: true },
+  PSB:    { title: "Peer Support Basic Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  ROF:    { title: "Requested Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  RW:     { title: "Return to Work", emoji: "🏠", "category": "off", isAllDay: true },
+  RWS:    { title: "Return to Work Supy", emoji: "🏠", "category": "off", isAllDay: true },
+  VA:     { title: "Late / Overdue Vacation", emoji: "🏖️", "category": "off", isAllDay: true },
+  XX:     { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  XXC:    { title: "Company Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  XXP:    { title: "Day Off Planning", emoji: "🏠", "category": "off", isAllDay: true },
+  XXR:    { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
+  XXV:    { title: "Day Off (Visa Change)", emoji: "🏠", "category": "off", isAllDay: true },
+  IV:     { title: "Office Interview", emoji: "👔", "category": "general" },
+  O:      { title: "Office Duty", emoji: "🏢", "category": "general" },
+  UIV:    { title: "US Visa Interview", emoji: "🛂", "category": "general" },
+  UIV1:   { title: "US Visa Interview (AM)", emoji: "🛂", "category": "general" },
+  YSA:    { title: "Service Assessment", emoji: "📋", "category": "general" }
 };
 
 // --- Global App State (Instant Memory Ready) ---
@@ -532,7 +532,7 @@ class FormatEngine {
   }
 }
 
-// --- Universal Hybrid Parser Engine (Updated Fallback Emojis) ---
+// --- Universal Hybrid Parser Engine ---
 class ParserEngine {
   static parseRawText(rawText) {
     const events = [];
@@ -650,12 +650,21 @@ class ParserEngine {
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
-          const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
           
-          const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
-          const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
-          const repEndM = ((repEndMinutes % 60) + 60) % 60;
-          const repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
+          let repEndTimeStr = "--:--";
+          try {
+              const ianaZone = origMeta && origMeta.iana ? origMeta.iana : "Asia/Dubai";
+              const formatter = new Intl.DateTimeFormat('en-GB', { 
+                  timeZone: ianaZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' 
+              });
+              repEndTimeStr = formatter.format(repEndUtc).replace(':', '');
+          } catch(e) {
+              const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
+              const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
+              const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
+              const repEndM = ((repEndMinutes % 60) + 60) % 60;
+              repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
+          }
 
           const reportEvent = {
             id: `ek-rep-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
@@ -834,19 +843,51 @@ class ParserEngine {
     return events;
   }
 
-  // --- Pure Math Timezone Engine ---
+  // --- Dynamic IANA Timezone Engine (DST Safe) ---
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
     const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
     const minutes = parseInt(cleanTime.slice(2, 4), 10) || 0;
 
     const airport = state.airports[locationCode] || BUILTIN_AIRPORTS[locationCode];
-    const fallbackOffset = airport ? (airport.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET) : HOME_UTC_OFFSET;
+    const ianaZone = airport && airport.iana ? airport.iana : "Asia/Dubai";
 
-    const date = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
-    const totalMinutes = (hours * 60 + minutes) - (fallbackOffset * 60);
-    date.setUTCHours(0, Math.round(totalMinutes), 0, 0);
-    return date;
+    // 1. Guess the UTC date as if the local time was UTC
+    const targetUTC = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
+
+    try {
+      // 2. Format the guessed date in the target IANA timezone
+      let p = {};
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: ianaZone,
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
+        hourCycle: 'h23'
+      });
+      
+      formatter.formatToParts(targetUTC).forEach(part => p[part.type] = part.value);
+
+      const formattedAsUtc = new Date(Date.UTC(
+        parseInt(p.year, 10),
+        parseInt(p.month, 10) - 1,
+        parseInt(p.day, 10),
+        parseInt(p.hour, 10),
+        parseInt(p.minute, 10),
+        parseInt(p.second, 10)
+      ));
+
+      // 3. Difference reveals the exact offset at that specific moment (including DST)
+      const offsetMs = formattedAsUtc.getTime() - targetUTC.getTime();
+      return new Date(targetUTC.getTime() - offsetMs);
+      
+    } catch (e) {
+      // Fallback for invalid IANA strings or unsupported browsers
+      const fallbackOffset = airport ? (airport.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET) : HOME_UTC_OFFSET;
+      const totalMinutes = (hours * 60 + minutes) - (fallbackOffset * 60);
+      const fallbackDate = new Date(Date.UTC(year, monthIndex, day, 0, 0));
+      fallbackDate.setUTCHours(0, Math.round(totalMinutes), 0, 0);
+      return fallbackDate;
+    }
   }
 
   // --- Ground Time Detection (Layovers > 4hrs & Turnarounds < 4hrs) ---
@@ -888,9 +929,13 @@ class ParserEngine {
 
             const formatLocal = (utcDate, locCode) => {
               try {
-                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
-                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
-                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
+                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
+                const iana = airportMeta && airportMeta.iana ? airportMeta.iana : "Asia/Dubai";
+                const formatter = new Intl.DateTimeFormat('en-GB', {
+                  timeZone: iana,
+                  hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+                });
+                return formatter.format(utcDate).replace(':', '');
               } catch (e) { return "--:--"; }
             };
 
@@ -988,9 +1033,13 @@ class ParserEngine {
             
             const formatLocal = (utcDate, locCode) => {
               try {
-                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
-                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
-                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
+                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
+                const iana = airportMeta && airportMeta.iana ? airportMeta.iana : "Asia/Dubai";
+                const formatter = new Intl.DateTimeFormat('en-GB', {
+                  timeZone: iana,
+                  hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+                });
+                return formatter.format(utcDate).replace(':', '');
               } catch (e) { return "--:--"; }
             };
             lay.startTime = formatLocal(lay.startUtc, station);
