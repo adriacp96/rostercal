@@ -1286,22 +1286,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (magicBtnReview) {
-  magicBtnReview.addEventListener('click', () => {
-    
-    if (magicModeView) {
-      magicModeView.classList.remove('flex');
-      magicModeView.classList.add('hidden');
-    }
-    if (standardUiView) {
-      standardUiView.classList.remove('hidden');
-    }
-    
-    const leftCol = document.querySelector('.lg\\:col-span-5');
-    const rightCol = document.querySelector('.lg\\:col-span-7');
-    if (leftCol) leftCol.classList.add('hidden');
-    if (rightCol) rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
-  });
-}
+    magicBtnReview.addEventListener('click', () => {
+      // Intentionally leaving 'magic-transparent' on html/body so header and footer remain hidden
+      
+      if (magicModeView) {
+        magicModeView.classList.remove('flex');
+        magicModeView.classList.add('hidden');
+      }
+      
+      if (standardUiView) {
+        standardUiView.classList.remove('hidden');
+        // Change the main container from a grid to a centered flex layout
+        standardUiView.classList.remove('grid', 'lg:grid-cols-12');
+        standardUiView.classList.add('flex', 'justify-center');
+      }
+      
+      const leftCol = document.querySelector('.lg\\:col-span-5');
+      const rightCol = document.querySelector('.lg\\:col-span-7');
+      
+      // Hide the input panel
+      if (leftCol) leftCol.classList.add('hidden');
+      
+      // Constrain the review panel so it floats neatly in the center
+      if (rightCol) {
+        rightCol.classList.remove('lg:col-span-7');
+        rightCol.classList.add('w-full', 'max-w-5xl'); 
+      }
+    });
+  }
   // --- END MAGIC MODE ---
 
   if ('serviceWorker' in navigator) {
