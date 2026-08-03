@@ -182,6 +182,11 @@ body.magic-transparent::after {
   display: none !important; /* Hides the floating background orbs in overlay mode */
 }
 
+/* Hide header and footer in magic mode to ensure only the overlay is visible */
+body.magic-transparent header,
+body.magic-transparent footer {
+  display: none !important;
+}
 /* Staggered Elegance for Magic Mode */
 .magic-item {
   opacity: 0;
