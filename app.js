@@ -1286,25 +1286,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (magicBtnReview) {
-    magicBtnReview.addEventListener('click', () => {
-      // If we exit magic mode, remove the transparency
-      document.documentElement.classList.remove('magic-transparent');
-      document.body.classList.remove('magic-transparent');
-      
-      if (magicModeView) {
-        magicModeView.classList.remove('flex');
-        magicModeView.classList.add('hidden');
-      }
-      if (standardUiView) {
-        standardUiView.classList.remove('hidden');
-      }
-      
-      const leftCol = document.querySelector('.lg\\:col-span-5');
-      const rightCol = document.querySelector('.lg\\:col-span-7');
-      if (leftCol) leftCol.classList.add('hidden');
-      if (rightCol) rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
-    });
-  }
+  magicBtnReview.addEventListener('click', () => {
+    
+    if (magicModeView) {
+      magicModeView.classList.remove('flex');
+      magicModeView.classList.add('hidden');
+    }
+    if (standardUiView) {
+      standardUiView.classList.remove('hidden');
+    }
+    
+    const leftCol = document.querySelector('.lg\\:col-span-5');
+    const rightCol = document.querySelector('.lg\\:col-span-7');
+    if (leftCol) leftCol.classList.add('hidden');
+    if (rightCol) rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
+  });
+}
   // --- END MAGIC MODE ---
 
   if ('serviceWorker' in navigator) {
