@@ -1179,15 +1179,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const magicModeView = document.getElementById('magic-mode-view');
   const magicBtnExport = document.getElementById('magic-btn-export');
   const magicBtnReview = document.getElementById('magic-btn-review');
+  
+  // NEW DOM ELEMENTS
+  const btnBackMagic = document.getElementById('btn-back-magic');
+  const btnCloseApp = document.getElementById('btn-close-app');
 
-  if (isMagicMode && standardUiView && magicModeView) {
-    standardUiView.classList.add('hidden');
-    magicModeView.classList.remove('hidden');
-    magicModeView.classList.add('flex');
-    
-    // Make the background transparent so the crew portal shows through
-    document.documentElement.classList.add('magic-transparent');
-    document.body.classList.add('magic-transparent');
+  // --- NEW EVENT LISTENERS ---
+  
+  // 1. BACK BUTTON: Returns to the "Schedule Processed" Magic overlay
+  if (btnBackMagic) {
+    btnBackMagic.addEventListener('click', () => {
+      if (standardUiView) {
+        standardUiView.classList.add('hidden');
+      }
+      if (magicModeView) {
+        magicModeView.classList.remove('hidden');
+        magicModeView.classList.add('flex');
+      }
+    });
+  }
+
+  // 2. CLOSE BUTTON: Hides the RosterCal interface entirely to reveal the original portal
+  if (btnCloseApp) {
+    btnCloseApp.addEventListener('click', () => {
+      // Hide the main wrapper container entirely
+      const mainContainer = document.querySelector('main');
+      if (mainContainer) {
+        mainContainer.style.display = 'none';
+      }
+      
+      // Ensure transparency classes remain so the portal underneath stays visible
+      document.documentElement.classList.add('magic-transparent');
+      document.body.classList.add('magic-transparent');
+    });
   }
 
   window.addEventListener('message', (event) => {
