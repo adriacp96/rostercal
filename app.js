@@ -639,8 +639,7 @@ class ParserEngine {
           (state.preferences.includeReport === undefined && origin === HOME_BASE)
         );
 
-        if (shouldAddReport) {
-          let repStartUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
+        let repStartUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
           if (repStartUtc >= startUtc) {
             repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
           }
