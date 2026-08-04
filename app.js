@@ -55,7 +55,7 @@ const BUILTIN_AIRPORTS = {
   DAR: { icao: "HTDA", city: "Dar es Salaam", name: "Julius Nyerere International Airport", iana: "Africa/Dar_es_Salaam", utc_offset: 3 },
   DEL: { icao: "VIDP", city: "Delhi", name: "Indira Gandhi International Airport", iana: "Asia/Kolkata", utc_offset: 5.5 },
   DFW: { icao: "KDFW", city: "Dallas/Fort Worth", name: "DFW International Airport", iana: "America/Chicago", utc_offset: -6 },
-  DME: { icao: "UUDD", city: "Moscow", name: "Moscow Domodedovo Airport", iana: "Europe/Moscow", utc_offset: 3 },
+  DME: { icao: "UUDD", "city": "Moscow", name: "Moscow Domodedovo Airport", iana: "Europe/Moscow", utc_offset: 3 },
   DMM: { icao: "OEDF", city: "Dammam", name: "King Fahd International Airport", iana: "Asia/Riyadh", utc_offset: 3 },
   DOH: { icao: "OTHH", city: "Doha", name: "Hamad International Airport", iana: "Asia/Qatar", utc_offset: 3 },
   DPS: { icao: "WADD", city: "Bali", name: "Ngurah Rai International Airport", iana: "Asia/Makassar", utc_offset: 8 },
@@ -71,7 +71,7 @@ const BUILTIN_AIRPORTS = {
   EWR: { icao: "KEWR", city: "Newark", name: "Newark Liberty International Airport", iana: "America/New_York", utc_offset: -5 },
   EZE: { icao: "SAEZ", city: "Buenos Aires", name: "Ministro Pistarini International Airport", iana: "America/Argentina/Buenos_Aires", utc_offset: -3 },
   FCO: { icao: "LIRF", city: "Rome", name: "Leonardo da Vinci–Fiumicino Airport", iana: "Europe/Rome", utc_offset: 1 },
-  FRA: { icao: "EDDF", city: "Frankfurt", name: "Frankfurt Airport", iana: "Europe/Berlin", utc_offset: 1 },
+  FRA: { icao: "EDDF", city: "Frankfurt", name: "Frankfurt Airport", iana: "Europe/Berlin", utc_offset": 1 },
   GIG: { icao: "SBGL", city: "Rio de Janeiro", name: "Rio de Janeiro/Galeão International Airport", iana: "America/Sao_Paulo", utc_offset: -3 },
   GLA: { icao: "EGPF", city: "Glasgow", name: "Glasgow Airport", iana: "Europe/London", utc_offset: 0 },
   GRU: { icao: "SBGR", city: "São Paulo", name: "Guarulhos International Airport", iana: "America/Sao_Paulo", utc_offset: -3 },
@@ -639,30 +639,36 @@ class ParserEngine {
           (state.preferences.includeReport === undefined && origin === HOME_BASE)
         );
 
-        let repStartUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
-          if (repStartUtc >= startUtc) {
-            repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
+        if (shouldAddReport) {
+          let originalRepUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
+          if (originalRepUtc >= startUtc) {
+            originalRepUtc.setUTCDate(originalRepUtc.getUTCDate() - 1);
           }
 
-          const repEndUtc = new Date(repStartUtc.getTime() + 60 * 60 * 1000);
+          // The event ends exactly AT the report time
+          const repEndUtc = new Date(originalRepUtc.getTime());
+          
+          // The event starts 1 hour BEFORE the report time
+          const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
+
           const repEventDate = new Date(repStartUtc);
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
           
-          let repEndTimeStr = "--:--";
+          let repStartTimeStr = "--:--";
           try {
               const ianaZone = origMeta && origMeta.iana ? origMeta.iana : "Asia/Dubai";
               const formatter = new Intl.DateTimeFormat('en-GB', { 
                   timeZone: ianaZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' 
               });
-              repEndTimeStr = formatter.format(repEndUtc).replace(':', '');
+              repStartTimeStr = formatter.format(repStartUtc).replace(':', '');
           } catch(e) {
               const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
-              const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
-              const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
-              const repEndM = ((repEndMinutes % 60) + 60) % 60;
-              repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
+              const repStartMinutes = repStartUtc.getUTCHours() * 60 + repStartUtc.getUTCMinutes() + Math.round(repOffset * 60);
+              const repStartH = ((Math.floor(repStartMinutes / 60) % 24) + 24) % 24;
+              const repStartM = ((repStartMinutes % 60) + 60) % 60;
+              repStartTimeStr = String(repStartH).padStart(2, '0') + String(repStartM).padStart(2, '0');
           }
 
           const reportEvent = {
@@ -673,8 +679,8 @@ class ParserEngine {
             origin: origin,
             destination: origin,
             location: `${origMeta?.city || origin} (${origin}) - Crew Check-in / eGate`,
-            startTime: repTime,
-            endTime: repEndTimeStr,
+            startTime: repStartTimeStr, // Now reflects 1 hour prior
+            endTime: repTime,           // Now ends exactly at the parsed report time
             day: repDay,
             month: repMonth,
             year: repYear,
