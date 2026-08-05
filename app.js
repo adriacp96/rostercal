@@ -222,7 +222,7 @@ const BUILTIN_EVENT_CODES = {
   ER71:   { title: "SEP C Recurrent", emoji: "📚", category: "training" },
   ER81:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   ER811:  { title: "SEP Recurrent A380/B777 (Day 1)", emoji: "📚", category: "training" },
-  ER812:  { title: "SEP Recurrent A380/B777 (Day 2)", emoji: "📚", category: "training" },
+  ER812:  { title: "SEP Recurrent A380/B777 (Day 2)", "emoji": "📚", category: "training" },
   ER82:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   ER821:  { title: "SEP Recurrent A380/B777 (Day 1)", emoji: "📚", category: "training" },
   ER822:  { title: "SEP Recurrent A380/B777 (Day 2)", emoji: "📚", category: "training" },
@@ -533,7 +533,7 @@ class FormatEngine {
   }
 }
 
-// --- Universal Hybrid Parser Engine (Updated Fallback Emojis) ---
+// --- Universal Hybrid Parser Engine ---
 class ParserEngine {
   static parseRawText(rawText) {
     const events = [];
@@ -646,6 +646,7 @@ class ParserEngine {
             repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
           }
 
+          // Report starts 1 hour BEFORE the report time (the window)
           const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
           
           const repEventDate = new Date(repStartUtc);
@@ -1133,13 +1134,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const magicModeView = document.getElementById('magic-mode-view');
   const magicBtnExport = document.getElementById('magic-btn-export');
   const magicBtnReview = document.getElementById('magic-btn-review');
+  const magicBgBlur = document.getElementById('magic-bg-blur');
 
   if (isMagicMode && standardUiView && magicModeView) {
     standardUiView.classList.add('hidden');
     magicModeView.classList.remove('hidden');
     magicModeView.classList.add('flex');
+    if(magicBgBlur) magicBgBlur.classList.remove('hidden');
     
-    // Make the background transparent so the crew portal shows through
+    // Make the body transparent to allow the crew portal to show through beneath the blur
     document.documentElement.classList.add('magic-transparent');
     document.body.classList.add('magic-transparent');
   }
@@ -1254,6 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const rightCol = document.querySelector('.lg\\:col-span-7');
       if (leftCol) leftCol.classList.add('hidden');
       if (rightCol) {
+        // Expand the right column to take full width and center it gracefully
         rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
         rightCol.classList.add('max-w-4xl', 'mx-auto', 'w-full');
       }
@@ -1431,8 +1435,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (tabText && panelText) {
     tabText.addEventListener("click", () => {
-      tabText.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
-      if (tabFile) tabFile.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      tabText.className = "flex-1 sm:flex-none pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      if (tabFile) tabFile.className = "flex-1 sm:flex-none pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
       panelText.classList.remove("hidden");
       if (panelFile) panelFile.classList.add("hidden");
     });
@@ -1440,8 +1444,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (tabFile && panelFile) {
     tabFile.addEventListener("click", () => {
-      tabFile.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
-      if (tabText) tabText.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      tabFile.className = "flex-1 sm:flex-none pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      if (tabText) tabText.className = "flex-1 sm:flex-none pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
       panelFile.classList.remove("hidden");
       if (panelText) panelText.classList.add("hidden");
     });
