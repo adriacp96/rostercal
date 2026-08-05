@@ -2,7 +2,7 @@
  * RosterCal — Emirates (EK) Cabin Crew Edition
  * Architecture: ES6 Modular Classes | 100% Client-Side Privacy
  * Features: Zero-Latency Instant Boot | Pure Math Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
- * UI Enhanced with Apple Design Principles[cite: 9]
+ * UI Enhanced with Apple Design Principles
  */
 
 const HOME_BASE = "DXB";
@@ -86,7 +86,7 @@ const BUILTIN_AIRPORTS = {
   HRE: { icao: "FVHA", city: "Harare", name: "Robert Gabriel Mugabe International Airport", iana: "Africa/Harare", utc_offset: 2 },
   HYD: { icao: "VOHS", city: "Hyderabad", name: "Rajiv Gandhi International Airport", iana: "Asia/Kolkata", utc_offset: 5.5 },
   IAD: { icao: "KIAD", city: "Washington D.C.", name: "Dulles International Airport", iana: "America/New_York", utc_offset: -5 },
-  IAH: { icao: "KIAH", city: "Houston", "name": "George Bush Intercontinental Airport", iana: "America/Chicago", utc_offset: -6 },
+  IAH: { icao: "KIAH", city: "Houston", name: "George Bush Intercontinental Airport", iana: "America/Chicago", utc_offset: -6 },
   ICN: { icao: "RKSI", city: "Seoul", name: "Incheon International Airport", iana: "Asia/Seoul", utc_offset: 9 },
   IKA: { icao: "OIIE", city: "Tehran", name: "Imam Khomeini International Airport", iana: "Asia/Tehran", utc_offset: 3.5 },
   ISB: { icao: "OPIS", city: "Islamabad", name: "Islamabad International Airport", iana: "Asia/Karachi", utc_offset: 5 },
@@ -641,22 +641,24 @@ class ParserEngine {
         );
 
         if (shouldAddReport) {
-          let repStartUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
-          if (repStartUtc >= startUtc) {
-            repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
+          let repEndUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
+          if (repEndUtc >= startUtc) {
+            repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
           }
 
-          const repEndUtc = new Date(repStartUtc.getTime() + 60 * 60 * 1000);
+          const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
+          
           const repEventDate = new Date(repStartUtc);
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
           const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
           
-          const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
-          const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
-          const repEndM = ((repEndMinutes % 60) + 60) % 60;
-          const repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
+          const repStartMinutes = repStartUtc.getUTCHours() * 60 + repStartUtc.getUTCMinutes() + Math.round(repOffset * 60);
+          const repStartH = ((Math.floor(repStartMinutes / 60) % 24) + 24) % 24;
+          const repStartM = ((repStartMinutes % 60) + 60) % 60;
+          const repStartTimeStr = String(repStartH).padStart(2, '0') + String(repStartM).padStart(2, '0');
+          const repEndTimeStr = repTime;
 
           const reportEvent = {
             id: `ek-rep-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
@@ -666,7 +668,7 @@ class ParserEngine {
             origin: origin,
             destination: origin,
             location: `${origMeta?.city || origin} (${origin}) - Crew Check-in / eGate`,
-            startTime: repTime,
+            startTime: repStartTimeStr,
             endTime: repEndTimeStr,
             day: repDay,
             month: repMonth,
@@ -1193,7 +1195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const blockHours = Math.floor(totalMs / (1000 * 60 * 60));
     
-    // NEW: Elegant Number Counter Animation Helper (with Delay)
+    // Elegant Number Counter Animation Helper (with Delay)
     const animateValue = (id, endValue, suffix = '', duration = 1200, delayMs = 0) => {
       const obj = document.getElementById(id);
       if (!obj) return;
@@ -1218,7 +1220,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Trigger animations with staggered delays that fire right as the boxes finish sliding in.
-    // The CSS animation takes ~800ms, and the boxes are delayed by 400, 500, 600... etc.
     animateValue('stat-flights', flightCount, '', 1200, 800);
     animateValue('stat-hours', blockHours, 'h', 1200, 900);
     animateValue('stat-layovers', layoverCount, '', 1200, 1000);
@@ -1239,9 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (magicBtnReview) {
     magicBtnReview.addEventListener('click', () => {
-      // If we exit magic mode, remove the transparency
-      document.documentElement.classList.remove('magic-transparent');
-      document.body.classList.remove('magic-transparent');
+      // Keep the transparency/blur so the background stays blurred
       
       if (magicModeView) {
         magicModeView.classList.remove('flex');
@@ -1254,7 +1253,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const leftCol = document.querySelector('.lg\\:col-span-5');
       const rightCol = document.querySelector('.lg\\:col-span-7');
       if (leftCol) leftCol.classList.add('hidden');
-      if (rightCol) rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
+      if (rightCol) {
+        rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
+        rightCol.classList.add('max-w-4xl', 'mx-auto', 'w-full');
+      }
     });
   }
   // --- END MAGIC MODE ---
@@ -1406,8 +1408,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnViewList && listViewContainer && listToolbar) {
     btnViewList.addEventListener("click", () => {
       state.activeView = 'list';
-      btnViewList.className = "px-2.5 py-1 rounded-md font-semibold bg-blue-600 text-white transition cursor-pointer flex items-center space-x-1 text-xs shadow-sm";
-      if (btnViewMonth) btnViewMonth.className = "px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-white transition cursor-pointer flex items-center space-x-1 text-xs";
+      btnViewList.className = "px-2.5 py-1 rounded-md font-semibold bg-blue-600 text-white cursor-pointer flex items-center space-x-1 text-xs shadow-sm btn";
+      if (btnViewMonth) btnViewMonth.className = "px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-white cursor-pointer flex items-center space-x-1 text-xs btn";
       listViewContainer.classList.remove("hidden");
       listToolbar.classList.remove("hidden");
       if (monthViewContainer) monthViewContainer.classList.add("hidden");
@@ -1418,8 +1420,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnViewMonth && monthViewContainer) {
     btnViewMonth.addEventListener("click", () => {
       state.activeView = 'month';
-      btnViewMonth.className = "px-2.5 py-1 rounded-md font-semibold bg-blue-600 text-white transition cursor-pointer flex items-center space-x-1 text-xs shadow-sm";
-      if (btnViewList) btnViewList.className = "px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-white transition cursor-pointer flex items-center space-x-1 text-xs";
+      btnViewMonth.className = "px-2.5 py-1 rounded-md font-semibold bg-blue-600 text-white cursor-pointer flex items-center space-x-1 text-xs shadow-sm btn";
+      if (btnViewList) btnViewList.className = "px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-white cursor-pointer flex items-center space-x-1 text-xs btn";
       monthViewContainer.classList.remove("hidden");
       if (listViewContainer) listViewContainer.classList.add("hidden");
       if (listToolbar) listToolbar.classList.add("hidden");
@@ -1429,8 +1431,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (tabText && panelText) {
     tabText.addEventListener("click", () => {
-      tabText.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition";
-      if (tabFile) tabFile.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition";
+      tabText.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      if (tabFile) tabFile.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
       panelText.classList.remove("hidden");
       if (panelFile) panelFile.classList.add("hidden");
     });
@@ -1438,8 +1440,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (tabFile && panelFile) {
     tabFile.addEventListener("click", () => {
-      tabFile.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition";
-      if (tabText) tabText.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold tracking-wide uppercase transition";
+      tabFile.className = "pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
+      if (tabText) tabText.className = "pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn";
       panelFile.classList.remove("hidden");
       if (panelText) panelText.classList.add("hidden");
     });
@@ -1565,7 +1567,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const timeDisplay = evt.isAllDay ? `<span class="bg-emerald-950/90 text-emerald-300 border border-emerald-800/60 px-1.5 py-0.5 rounded text-[10px] font-semibold">All Day (24h)</span>` : `${formatTime(evt.startUtc)} - ${formatTime(evt.endUtc)}`;
 
       tr.innerHTML = `
-        <td class="py-2.5 px-2.5"><input type="checkbox" ${evt.enabled ? 'checked' : ''} data-id="${evt.id}" class="row-toggle rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 cursor-pointer w-4 h-4"></td>
+        <td class="py-2.5 px-2.5"><input type="checkbox" ${evt.enabled ? 'checked' : ''} data-id="${evt.id}" class="row-toggle rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 cursor-pointer w-4 h-4 btn"></td>
         <td class="py-2.5 px-2 font-mono text-[11px] text-slate-300 whitespace-nowrap">${evt.dateStr}</td>
         <td class="py-2.5 px-2 font-medium text-slate-200">${dynamicTitle}</td>
         <td class="py-2.5 px-2 text-slate-400 text-[11px]">${evt.origin && evt.origin !== HOME_BASE && evt.category === 'flight' ? evt.origin + ' ➡️ ' + evt.destination : evt.location}</td>
