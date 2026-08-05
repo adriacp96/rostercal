@@ -7,10 +7,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-slate-100 min-h-screen lg:h-screen lg:overflow-x-hidden font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+<body class="text-slate-100 min-h-screen lg:h-screen lg:overflow-x-hidden font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white relative">
   
-  <!-- Navbar - Translucent layer following Apple Design depth rules[cite: 9] -->
-  <header class="apple-glass z-50">
+  <!-- Magic Background Blur Overlay -->
+  <div id="magic-bg-blur" class="hidden fixed inset-0 z-0 bg-slate-950/40 backdrop-blur-2xl transition-all duration-500"></div>
+
+  <!-- Navbar - Translucent layer following Apple Design depth rules -->
+  <header class="apple-glass z-50 relative">
     <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <div class="w-8 h-8 flex items-center justify-center">
@@ -19,21 +22,21 @@
         <h1 class="text-xl font-extrabold animated-blue-text bg-clip-text text-transparent">RosterCal</h1>
       </div>
       
-      <div class="flex items-center space-x-2 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] text-emerald-300 font-medium shadow-md shadow-emerald-950/50 animated-emerald-badge">
+      <div class="flex items-center space-x-2 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] text-emerald-300 font-medium shadow-md shadow-emerald-950/50 animated-emerald-badge hidden sm:flex">
         <span>🔒 100% Client-Side Private</span>
       </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-3 flex-grow flex flex-col relative w-full min-h-0">
+  <main class="max-w-7xl mx-auto px-4 py-3 flex-grow flex flex-col relative w-full min-h-0 z-10">
     
     <!-- Standard UI (Wrapped for view-switching) -->
     <div id="standard-ui-view" class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow items-stretch w-full min-h-0">
       
       <!-- Input Column (Left 5 Cols) -->
       <div class="lg:col-span-5 space-y-3 flex flex-col h-full min-h-0">
-        <!-- Apple Glass translucent layers[cite: 9] -->
+        <!-- Apple Glass translucent layers -->
         <div class="apple-glass rounded-2xl p-3.5 flex flex-col flex-grow h-full justify-between min-h-0">
           
           <div class="flex flex-col flex-grow space-y-2.5 min-h-0">
@@ -44,11 +47,11 @@
               </div>
             </div>
 
-            <!-- Buttons use active:scale to respond on pointer-down[cite: 9] -->
+            <!-- Buttons use active:scale to respond on pointer-down -->
             <div class="flex items-center space-x-2 shrink-0">
               <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer"
                  class="flex-1 h-[32px] bg-slate-900/90 hover:bg-slate-700/80 text-sky-400 hover:text-sky-200 border border-slate-700/80 font-medium px-2.5 rounded-xl flex items-center justify-center space-x-1.5 text-[11px] shadow-sm cursor-pointer group btn">
-                <span>🌐 Open Emirates Crew Portal</span>
+                <span class="truncate">🌐 Open Emirates Crew Portal</span>
                 <span class="text-slate-500 group-hover:text-slate-300 transition-colors">↗</span>
               </a>
               <button id="btn-info" type="button" title="How to download your roster"
@@ -58,8 +61,8 @@
             </div>
             
             <div class="flex border-b border-slate-700/80 text-xs font-medium shrink-0">
-              <button id="tab-text" class="pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn">Raw Text Portal</button>
-              <button id="tab-file" class="pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn">Upload CSV/File</button>
+              <button id="tab-text" class="flex-1 sm:flex-none pb-1.5 border-b-2 border-blue-500 text-blue-400 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn">Raw Text</button>
+              <button id="tab-file" class="flex-1 sm:flex-none pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 px-2.5 cursor-pointer text-[10px] font-semibold uppercase btn">Upload CSV/File</button>
             </div>
 
             <div id="panel-text" class="block relative flex-grow flex flex-col min-h-0">
@@ -100,7 +103,7 @@
               </button>
             </div>
 
-            <div class="border-t border-slate-700/60 pt-2 text-center">
+            <div class="border-t border-slate-700/60 pt-2 text-center hidden sm:block">
               <p class="text-[10px] text-slate-400 mb-1">Drag this button to your bookmarks bar to easily copy your roster:</p>
               <a href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20main%20container');return;%7Dconst%20clonedContainer=mainContainer.cloneNode(true);const%20svgToRemove=clonedContainer.querySelector('%23SVGContainer');if(svgToRemove)%7BsvgToRemove.remove();%7Dconst%20stylesToRemove=clonedContainer.querySelectorAll('style');stylesToRemove.forEach(style=%3Estyle.remove());const%20cleanedText=clonedContainer.innerText.split('%5Cn').filter(line=%3Eline.trim()!=='').join('%5Cn');navigator.clipboard.writeText(cleanedText).then(()=%3Ealert('Roster%20copied%20as%20plain%20text.')).catch(err=%3E%7Bconsole.error(err);%7D);%7D)();" 
                  class="inline-block bg-slate-900 hover:bg-slate-700 text-slate-200 font-medium py-1 px-2.5 rounded-full cursor-grab text-[10px] border border-slate-700 shadow-sm btn"
@@ -115,7 +118,7 @@
 
       <!-- Preview & Export Column (Right 7 Cols) -->
       <div class="lg:col-span-7 space-y-3 flex flex-col h-full min-h-0">
-        <!-- Apple Glass translucent layer[cite: 9] -->
+        <!-- Apple Glass translucent layer -->
         <div class="apple-glass rounded-2xl p-3.5 flex flex-col justify-between flex-grow h-full min-h-0">
           
           <div class="flex flex-col flex-grow min-h-0">
@@ -145,9 +148,9 @@
             <div id="list-toolbar" class="flex items-center justify-between px-1 mb-1.5 text-xs text-slate-400 shrink-0">
               <label class="flex items-center space-x-1.5 cursor-pointer select-none hover:text-slate-200 transition">
                 <input type="checkbox" id="toggle-all" checked class="rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 w-3.5 h-3.5 btn">
-                <span class="font-medium text-[10px]">Select All Events</span>
+                <span class="font-medium text-[10px]">Select All</span>
               </label>
-              <span class="font-mono text-[9px] text-slate-500">Click row checkboxes to toggle sync</span>
+              <span class="font-mono text-[9px] text-slate-500 hidden sm:inline">Click row checkboxes to toggle sync</span>
             </div>
 
             <!-- LIST VIEW CONTAINER -->
@@ -156,17 +159,17 @@
                 <table class="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr class="border-b border-slate-700/80 text-slate-400 text-[10px] font-bold uppercase sticky top-0 bg-slate-900/95 backdrop-blur z-10 tracking-tight">
-                      <th class="py-2 px-2.5 w-7">Sync</th>
+                      <th class="py-2 px-2 w-7">Sync</th>
                       <th class="py-2 px-2">Date</th>
-                      <th class="py-2 px-2">Duty / Flight</th>
-                      <th class="py-2 px-2">Route / Loc</th>
-                      <th class="py-2 px-2">Timings</th>
+                      <th class="py-2 px-2">Duty</th>
+                      <th class="py-2 px-2">Loc</th>
+                      <th class="py-2 px-2">Time</th>
                     </tr>
                   </thead>
                   <tbody id="roster-table-body" class="divide-y divide-slate-800/60">
                     <tr id="empty-state">
                       <td colspan="5" class="py-12 text-center text-slate-500">
-                        <div class="flex flex-col items-center justify-center space-y-1">
+                        <div class="flex flex-col items-center justify-center space-y-1 px-4">
                           <span class="text-2xl">🗓️</span>
                           <p class="text-xs font-medium text-slate-400 tracking-tight">No roster parsed yet. Paste your schedule on the left to preview.</p>
                         </div>
@@ -182,11 +185,11 @@
               <div class="bg-slate-950/50 border border-slate-700/60 rounded-xl p-2.5 shadow-inner flex flex-col flex-grow min-h-0">
                 <div class="flex items-center justify-between mb-1.5 px-1 shrink-0 flex-wrap gap-1">
                   <h3 id="month-view-title" class="text-xs font-bold text-slate-200 tracking-tight">Calendar Month View</h3>
-                  <div class="flex items-center space-x-2 text-[10px] text-slate-400">
+                  <div class="flex items-center space-x-2 text-[10px] text-slate-400 hidden sm:flex">
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Flight</span></span>
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-violet-500"></span><span>Check-in</span></span>
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Duty</span></span>
-                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>All-Day / Off</span></span>
+                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>All-Day/Off</span></span>
                   </div>
                 </div>
                 <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase mb-1 border-b border-slate-800 pb-1 shrink-0">
@@ -201,9 +204,9 @@
           <!-- Bottom Action Bar -->
           <div class="pt-2.5 border-t border-slate-700/80 mt-2.5 flex items-center justify-between gap-2 shrink-0">
             <button id="btn-open-prefs" class="h-[34px] bg-slate-900/90 hover:bg-slate-700 text-slate-200 font-semibold px-3 rounded-xl border border-slate-700/80 shadow flex items-center justify-center space-x-1 text-xs whitespace-nowrap cursor-pointer btn">
-              <span>⚙️</span><span>Customise</span>
+              <span>⚙️</span><span class="hidden sm:inline">Customise</span>
             </button>
-            <button id="btn-export" disabled class="h-[34px] bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold px-3.5 rounded-xl shadow-lg shadow-emerald-950/40 border border-emerald-500/30 flex items-center justify-center space-x-1.5 cursor-pointer whitespace-nowrap text-xs uppercase tracking-tight btn">
+            <button id="btn-export" disabled class="flex-1 sm:flex-none h-[34px] bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold px-3.5 rounded-xl shadow-lg shadow-emerald-950/40 border border-emerald-500/30 flex items-center justify-center space-x-1.5 cursor-pointer whitespace-nowrap text-xs uppercase tracking-tight btn">
               <span>📥</span><span>Download .ics</span>
             </button>
           </div>
@@ -214,57 +217,57 @@
     </div>
 
     <!-- MAGIC MODE OVERLAY -->
-    <div id="magic-mode-view" class="hidden fixed inset-0 z-[100] bg-transparent flex-col items-center justify-center p-4 md:p-12 animate-fade-in text-center">
+    <div id="magic-mode-view" class="hidden fixed inset-0 z-[100] bg-transparent flex-col items-center justify-center p-4 sm:p-8 animate-fade-in text-center w-full min-h-screen overflow-y-auto overflow-x-hidden">
       
       <!-- Aviation Animation (SVG) -->
-      <div class="relative w-full max-w-lg h-28 md:h-32 mb-6 flex justify-center items-center magic-item delay-100">
+      <div class="relative w-full max-w-lg h-20 sm:h-28 md:h-32 mb-4 sm:mb-6 flex justify-center items-center magic-item delay-100 mt-auto">
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-radar-sweep rounded-full blur-xl"></div>
-        <img src="success.gif" alt="Plane" class="absolute w-20 h-20 md:w-24 md:h-24 animate-takeoff drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] z-10" />
+        <img src="success.gif" alt="Plane" class="absolute w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 animate-takeoff drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] z-10" />
       </div>
       
-      <h2 class="text-2xl md:text-4xl font-extrabold text-blue-950 tracking-tight mb-2 magic-item delay-200">Schedule Processed</h2>
-      <p id="magic-month-title" class="text-blue-800 font-bold mb-8 md:mb-10 uppercase tracking-tight text-xs md:text-sm magic-item delay-300">Listening for Roster Data...</p>
+      <h2 class="text-xl sm:text-3xl md:text-4xl font-extrabold text-blue-950 tracking-tight mb-1 sm:mb-2 magic-item delay-200 px-2">Schedule Processed</h2>
+      <p id="magic-month-title" class="text-blue-800 font-bold mb-6 sm:mb-8 md:mb-10 uppercase tracking-tight text-[10px] sm:text-xs md:text-sm magic-item delay-300">Listening for Roster Data...</p>
       
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full max-w-6xl mb-10">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 w-full max-w-6xl mb-8 px-1 sm:px-0">
         <!-- Magic UI Cards use Apple Design layers -->
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-400">
-          <div class="text-2xl md:text-3xl mb-2">🛫</div>
-          <div id="stat-flights" class="text-2xl md:text-3xl font-extrabold text-blue-400 tracking-tight">0</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Sectors</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-400 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">🛫</div>
+          <div id="stat-flights" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-400 tracking-tight">0</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Sectors</div>
         </div>
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-500">
-          <div class="text-2xl md:text-3xl mb-2">⏱️</div>
-          <div id="stat-hours" class="text-2xl md:text-3xl font-extrabold text-violet-400 tracking-tight">0h</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Block Hrs</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-500 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">⏱️</div>
+          <div id="stat-hours" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-violet-400 tracking-tight">0h</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Block Hrs</div>
         </div>
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-600">
-          <div class="text-2xl md:text-3xl mb-2">🏨</div>
-          <div id="stat-layovers" class="text-2xl md:text-3xl font-extrabold text-amber-400 tracking-tight">0</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Layovers</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-600 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">🏨</div>
+          <div id="stat-layovers" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-amber-400 tracking-tight">0</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Layovers</div>
         </div>
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-700">
-          <div class="text-2xl md:text-3xl mb-2">🔄</div>
-          <div id="stat-turnarounds" class="text-2xl md:text-3xl font-extrabold text-sky-400 tracking-tight">0</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Turnarounds</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-700 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">🔄</div>
+          <div id="stat-turnarounds" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-sky-400 tracking-tight">0</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Turns</div>
         </div>
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-800">
-          <div class="text-2xl md:text-3xl mb-2">🏖️</div>
-          <div id="stat-off" class="text-2xl md:text-3xl font-extrabold text-emerald-400 tracking-tight">0</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Days Off</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-800 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">🏖️</div>
+          <div id="stat-off" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-400 tracking-tight">0</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Days Off</div>
         </div>
-        <div class="apple-glass rounded-2xl p-4 md:p-5 text-center shadow-lg transform magic-item delay-900">
-          <div class="text-2xl md:text-3xl mb-2">📅</div>
-          <div id="stat-events" class="text-2xl md:text-3xl font-extrabold text-rose-400 tracking-tight">0</div>
-          <div class="text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Total Events</div>
+        <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-900 flex flex-col justify-center">
+          <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">📅</div>
+          <div id="stat-events" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-rose-400 tracking-tight">0</div>
+          <div class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 uppercase tracking-tight font-bold mt-1">Events</div>
         </div>
       </div>
       
-      <button id="magic-btn-export" disabled class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 md:px-12 md:py-5 rounded-full shadow-[0_0_40px_-10px_rgba(59,130,246,0.6)] border border-blue-400/50 flex items-center space-x-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed magic-item delay-1000 btn">
-        <span class="text-xl md:text-2xl">📥</span>
-        <span class="text-sm md:text-lg uppercase tracking-tight">Download .ics Calendar</span>
+      <button id="magic-btn-export" disabled class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 sm:px-8 sm:py-4 md:px-12 md:py-5 rounded-full shadow-[0_0_40px_-10px_rgba(59,130,246,0.6)] border border-blue-400/50 flex items-center space-x-2 sm:space-x-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed magic-item delay-1000 btn">
+        <span class="text-lg sm:text-xl md:text-2xl">📥</span>
+        <span class="text-[11px] sm:text-sm md:text-lg uppercase tracking-tight">Download .ics Calendar</span>
       </button>
   
-      <button id="magic-btn-review" class="mt-8 text-xs text-slate-500 hover:text-white underline border-none bg-transparent cursor-pointer magic-item delay-1000 btn">
+      <button id="magic-btn-review" class="mt-6 sm:mt-8 mb-auto text-[10px] sm:text-xs text-slate-500 hover:text-white underline border-none bg-transparent cursor-pointer magic-item delay-1000 btn">
         Open detailed manual review
       </button>
     </div>
@@ -401,7 +404,7 @@
 
       <div class="pt-3.5 border-t border-slate-700/80 flex items-center justify-between gap-2">
         <button id="btn-reset-prefs" type="button" class="text-xs text-slate-400 hover:text-red-400 font-medium px-2 py-1.5 cursor-pointer btn">
-          ↻ Reset to Defaults
+          ↻ Reset Defaults
         </button>
         <button id="btn-save-prefs" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/30 cursor-pointer uppercase tracking-tight btn">
           Apply & Close
@@ -411,7 +414,7 @@
     </div>
   </div>
 
-  <footer class="apple-glass border-t border-slate-800/80 py-2 text-center text-[10px] text-slate-500 font-medium tracking-tight shrink-0">
+  <footer class="apple-glass border-t border-slate-800/80 py-2 text-center text-[10px] text-slate-500 font-medium tracking-tight shrink-0 relative z-10">
     <p>Made with ❤️ by Adrià</p>
   </footer>
 
