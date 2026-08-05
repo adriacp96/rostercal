@@ -1,7 +1,8 @@
 /**
  * RosterCal — Emirates (EK) Cabin Crew Edition
  * Architecture: ES6 Modular Classes | 100% Client-Side Privacy
- * Features: Zero-Latency Instant Boot | Native IANA DST Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
+ * Features: Zero-Latency Instant Boot | Pure Math Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
+ * UI Enhanced with Apple Design Principles[cite: 9]
  */
 
 const HOME_BASE = "DXB";
@@ -85,7 +86,7 @@ const BUILTIN_AIRPORTS = {
   HRE: { icao: "FVHA", city: "Harare", name: "Robert Gabriel Mugabe International Airport", iana: "Africa/Harare", utc_offset: 2 },
   HYD: { icao: "VOHS", city: "Hyderabad", name: "Rajiv Gandhi International Airport", iana: "Asia/Kolkata", utc_offset: 5.5 },
   IAD: { icao: "KIAD", city: "Washington D.C.", name: "Dulles International Airport", iana: "America/New_York", utc_offset: -5 },
-  IAH: { icao: "KIAH", city: "Houston", name: "George Bush Intercontinental Airport", iana: "America/Chicago", utc_offset: -6 },
+  IAH: { icao: "KIAH", city: "Houston", "name": "George Bush Intercontinental Airport", iana: "America/Chicago", utc_offset: -6 },
   ICN: { icao: "RKSI", city: "Seoul", name: "Incheon International Airport", iana: "Asia/Seoul", utc_offset: 9 },
   IKA: { icao: "OIIE", city: "Tehran", name: "Imam Khomeini International Airport", iana: "Asia/Tehran", utc_offset: 3.5 },
   ISB: { icao: "OPIS", city: "Islamabad", name: "Islamabad International Airport", iana: "Asia/Karachi", utc_offset: 5 },
@@ -111,7 +112,7 @@ const BUILTIN_AIRPORTS = {
   LYS: { icao: "LFLL", city: "Lyon", name: "Lyon-Saint Exupéry Airport", iana: "Europe/Paris", utc_offset: 1 },
   MAA: { icao: "VOMM", city: "Chennai", name: "Chennai International Airport", iana: "Asia/Kolkata", utc_offset: 5.5 },
   MAD: { icao: "LEMD", city: "Madrid", name: "Adolfo Suárez Madrid–Barajas Airport", iana: "Europe/Madrid", utc_offset: 1 },
-  MAN: { icao: "EGCC", city: "Manchester", name: "Manchester Airport", iana: "Europe/London", utc_offset: 0 },
+  MAN: { icao: "EGCC", "city": "Manchester", name: "Manchester Airport", iana: "Europe/London", utc_offset: 0 },
   MCO: { icao: "KMCO", city: "Orlando", name: "Orlando International Airport", iana: "America/New_York", utc_offset: -5 },
   MCT: { icao: "OOMS", city: "Muscat", name: "Muscat International Airport", iana: "Asia/Muscat", utc_offset: 4 },
   MED: { icao: "OEMA", city: "Medina", name: "Prince Mohammad bin Abdulaziz International Airport", iana: "Asia/Riyadh", utc_offset: 3 },
@@ -121,13 +122,13 @@ const BUILTIN_AIRPORTS = {
   MLA: { icao: "LMML", city: "Malta", name: "Malta International Airport", iana: "Europe/Malta", utc_offset: 1 },
   MLE: { icao: "VRMM", city: "Malé", name: "Velana International Airport", iana: "Indian/Maldives", utc_offset: 5 },
   MNL: { icao: "RPLL", city: "Manila", name: "Ninoy Aquino International Airport", iana: "Asia/Manila", utc_offset: 8 },
-  MRU: { icao: "FIMP", city: "Mauritius", name: "Sir Seewoosagur Ramgoolam International Airport", iana: "Indian/Mauritius", utc_offset: 4 },
+  MRU: { icao: "FIMP", "city": "Mauritius", name: "Sir Seewoosagur Ramgoolam International Airport", iana: "Indian/Mauritius", utc_offset: 4 },
   MUC: { icao: "EDDM", city: "Munich", name: "Munich Airport", iana: "Europe/Berlin", utc_offset: 1 },
   MXP: { icao: "LIMC", city: "Milan", name: "Milan Malpensa Airport", iana: "Europe/Rome", utc_offset: 1 },
   NBO: { icao: "HKJK", city: "Nairobi", name: "Jomo Kenyatta International Airport", iana: "Africa/Nairobi", utc_offset: 3 },
   NCE: { icao: "LFMN", city: "Nice", name: "Nice Côte d'Azur Airport", iana: "Europe/Paris", utc_offset: 1 },
   NCL: { icao: "EGNT", city: "Newcastle", name: "Newcastle International Airport", iana: "Europe/London", utc_offset: 0 },
-  NRT: { icao: "RJAA", city: "Tokyo", name: "Narita International Airport", iana: "Asia/Tokyo", utc_offset: 9 },
+  NRT: { icao: "RJAA", "city": "Tokyo", name: "Narita International Airport", iana: "Asia/Tokyo", utc_offset: 9 },
   ORD: { icao: "KORD", city: "Chicago", name: "O'Hare International Airport", iana: "America/Chicago", utc_offset: -6 },
   OSL: { icao: "ENGM", city: "Oslo", name: "Oslo Gardermoen Airport", iana: "Europe/Oslo", utc_offset: 1 },
   PEK: { icao: "ZBAA", city: "Beijing", name: "Beijing Capital International Airport", iana: "Asia/Shanghai", utc_offset: 8 },
@@ -160,7 +161,7 @@ const BUILTIN_AIRPORTS = {
   ZRH: { icao: "LSZH", city: "Zurich", name: "Zurich Airport", iana: "Europe/Zurich", utc_offset: 1 }
 };
 
-// --- Built-in Instant Memory Duty Code Library ---
+// --- Built-in Instant Memory Duty Code Library (Updated Emojis: 🏠 🏖️ 🕒 📚) ---
 const BUILTIN_EVENT_CODES = {
   FLT:    { title: "Emirates Flight", emoji: "✈️", category: "flight" },
   EK:     { title: "Emirates Flight", emoji: "✈️", category: "flight" },
@@ -272,32 +273,32 @@ const BUILTIN_EVENT_CODES = {
   S17:    { title: "Standby from 17:00 (CC)", emoji: "⏳", category: "standby" },
   S21:    { title: "Standby from 21:00 (CC)", emoji: "⏳", category: "standby" },
   SAB700: { title: "Airport Standby (07:00)", emoji: "🛃", category: "standby" },
-  SD:     { title: "Stand Down Reserve", emoji: "🛋️", "category": "standby" },
+  SD:     { title: "Stand Down Reserve", emoji: "🛋️", category: "standby" },
   SO08:   { title: "Cross Qualification Standby (08:00)", emoji: "⏳", category: "standby" },
   SO21:   { title: "Cross Qualification Standby (21:00)", emoji: "⏳", category: "standby" },
-  STBY:   { title: "Standby Reserve", emoji: "⏳", "category": "standby" },
-  DO:     { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  OFF:    { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  AL:     { title: "Annual Leave", emoji: "🏖️", "category": "off", isAllDay: true },
-  FI:     { title: "Emergency Leave", emoji: "🏖️", "category": "off", isAllDay: true },
-  FP:     { title: "Folga Pedida (Requested Day Off)", emoji: "🏠", "category": "off", isAllDay: true },
-  LV:     { title: "Normal Annual Leave", emoji: "🏖️", "category": "off", isAllDay: true },
-  NPA:    { title: "No Planned Assignment", emoji: "🏠", "category": "off", isAllDay: true },
-  PSB:    { title: "Peer Support Basic Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  ROF:    { title: "Requested Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  RW:     { title: "Return to Work", emoji: "🏠", "category": "off", isAllDay: true },
-  RWS:    { title: "Return to Work Supy", emoji: "🏠", "category": "off", isAllDay: true },
-  VA:     { title: "Late / Overdue Vacation", emoji: "🏖️", "category": "off", isAllDay: true },
-  XX:     { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  XXC:    { title: "Company Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  XXP:    { title: "Day Off Planning", emoji: "🏠", "category": "off", isAllDay: true },
-  XXR:    { title: "Day Off", emoji: "🏠", "category": "off", isAllDay: true },
-  XXV:    { title: "Day Off (Visa Change)", emoji: "🏠", "category": "off", isAllDay: true },
-  IV:     { title: "Office Interview", emoji: "👔", "category": "general" },
-  O:      { title: "Office Duty", emoji: "🏢", "category": "general" },
-  UIV:    { title: "US Visa Interview", emoji: "🛂", "category": "general" },
-  UIV1:   { title: "US Visa Interview (AM)", emoji: "🛂", "category": "general" },
-  YSA:    { title: "Service Assessment", emoji: "📋", "category": "general" }
+  STBY:   { title: "Standby Reserve", emoji: "⏳", category: "standby" },
+  DO:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  OFF:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  AL:     { title: "Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
+  FI:     { title: "Emergency Leave", emoji: "🏖️", category: "off", isAllDay: true },
+  FP:     { title: "Folga Pedida (Requested Day Off)", emoji: "🏠", category: "off", isAllDay: true },
+  LV:     { title: "Normal Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
+  NPA:    { title: "No Planned Assignment", emoji: "🏠", category: "off", isAllDay: true },
+  PSB:    { title: "Peer Support Basic Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  ROF:    { title: "Requested Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  RW:     { title: "Return to Work", emoji: "🏠", category: "off", isAllDay: true },
+  RWS:    { title: "Return to Work Supy", emoji: "🏠", category: "off", isAllDay: true },
+  VA:     { title: "Late / Overdue Vacation", emoji: "🏖️", category: "off", isAllDay: true },
+  XX:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  XXC:    { title: "Company Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  XXP:    { title: "Day Off Planning", emoji: "🏠", category: "off", isAllDay: true },
+  XXR:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  XXV:    { title: "Day Off (Visa Change)", emoji: "🏠", category: "off", isAllDay: true },
+  IV:     { title: "Office Interview", emoji: "👔", category: "general" },
+  O:      { title: "Office Duty", emoji: "🏢", category: "general" },
+  UIV:    { title: "US Visa Interview", emoji: "🛂", category: "general" },
+  UIV1:   { title: "US Visa Interview (AM)", emoji: "🛂", category: "general" },
+  YSA:    { title: "Service Assessment", emoji: "📋", category: "general" }
 };
 
 // --- Global App State (Instant Memory Ready) ---
@@ -532,7 +533,7 @@ class FormatEngine {
   }
 }
 
-// --- Universal Hybrid Parser Engine ---
+// --- Universal Hybrid Parser Engine (Updated Fallback Emojis) ---
 class ParserEngine {
   static parseRawText(rawText) {
     const events = [];
@@ -650,21 +651,12 @@ class ParserEngine {
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
+          const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
           
-          let repEndTimeStr = "--:--";
-          try {
-              const ianaZone = origMeta && origMeta.iana ? origMeta.iana : "Asia/Dubai";
-              const formatter = new Intl.DateTimeFormat('en-GB', { 
-                  timeZone: ianaZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' 
-              });
-              repEndTimeStr = formatter.format(repEndUtc).replace(':', '');
-          } catch(e) {
-              const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
-              const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
-              const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
-              const repEndM = ((repEndMinutes % 60) + 60) % 60;
-              repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
-          }
+          const repEndMinutes = repEndUtc.getUTCHours() * 60 + repEndUtc.getUTCMinutes() + Math.round(repOffset * 60);
+          const repEndH = ((Math.floor(repEndMinutes / 60) % 24) + 24) % 24;
+          const repEndM = ((repEndMinutes % 60) + 60) % 60;
+          const repEndTimeStr = String(repEndH).padStart(2, '0') + String(repEndM).padStart(2, '0');
 
           const reportEvent = {
             id: `ek-rep-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
@@ -843,51 +835,19 @@ class ParserEngine {
     return events;
   }
 
-  // --- Dynamic IANA Timezone Engine (DST Safe) ---
+  // --- Pure Math Timezone Engine ---
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
     const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
     const minutes = parseInt(cleanTime.slice(2, 4), 10) || 0;
 
     const airport = state.airports[locationCode] || BUILTIN_AIRPORTS[locationCode];
-    const ianaZone = airport && airport.iana ? airport.iana : "Asia/Dubai";
+    const fallbackOffset = airport ? (airport.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET) : HOME_UTC_OFFSET;
 
-    // 1. Guess the UTC date as if the local time was UTC
-    const targetUTC = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
-
-    try {
-      // 2. Format the guessed date in the target IANA timezone
-      let p = {};
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: ianaZone,
-        year: 'numeric', month: 'numeric', day: 'numeric',
-        hour: 'numeric', minute: 'numeric', second: 'numeric',
-        hourCycle: 'h23'
-      });
-      
-      formatter.formatToParts(targetUTC).forEach(part => p[part.type] = part.value);
-
-      const formattedAsUtc = new Date(Date.UTC(
-        parseInt(p.year, 10),
-        parseInt(p.month, 10) - 1,
-        parseInt(p.day, 10),
-        parseInt(p.hour, 10),
-        parseInt(p.minute, 10),
-        parseInt(p.second, 10)
-      ));
-
-      // 3. Difference reveals the exact offset at that specific moment (including DST)
-      const offsetMs = formattedAsUtc.getTime() - targetUTC.getTime();
-      return new Date(targetUTC.getTime() - offsetMs);
-      
-    } catch (e) {
-      // Fallback for invalid IANA strings or unsupported browsers
-      const fallbackOffset = airport ? (airport.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET) : HOME_UTC_OFFSET;
-      const totalMinutes = (hours * 60 + minutes) - (fallbackOffset * 60);
-      const fallbackDate = new Date(Date.UTC(year, monthIndex, day, 0, 0));
-      fallbackDate.setUTCHours(0, Math.round(totalMinutes), 0, 0);
-      return fallbackDate;
-    }
+    const date = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
+    const totalMinutes = (hours * 60 + minutes) - (fallbackOffset * 60);
+    date.setUTCHours(0, Math.round(totalMinutes), 0, 0);
+    return date;
   }
 
   // --- Ground Time Detection (Layovers > 4hrs & Turnarounds < 4hrs) ---
@@ -929,13 +889,9 @@ class ParserEngine {
 
             const formatLocal = (utcDate, locCode) => {
               try {
-                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
-                const iana = airportMeta && airportMeta.iana ? airportMeta.iana : "Asia/Dubai";
-                const formatter = new Intl.DateTimeFormat('en-GB', {
-                  timeZone: iana,
-                  hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-                });
-                return formatter.format(utcDate).replace(':', '');
+                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
+                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
+                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
               } catch (e) { return "--:--"; }
             };
 
@@ -1033,13 +989,9 @@ class ParserEngine {
             
             const formatLocal = (utcDate, locCode) => {
               try {
-                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
-                const iana = airportMeta && airportMeta.iana ? airportMeta.iana : "Asia/Dubai";
-                const formatter = new Intl.DateTimeFormat('en-GB', {
-                  timeZone: iana,
-                  hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-                });
-                return formatter.format(utcDate).replace(':', '');
+                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
+                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
+                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
               } catch (e) { return "--:--"; }
             };
             lay.startTime = formatLocal(lay.startUtc, station);
@@ -1287,31 +1239,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (magicBtnReview) {
     magicBtnReview.addEventListener('click', () => {
-      // Intentionally leaving 'magic-transparent' on html/body so header and footer remain hidden
+      // If we exit magic mode, remove the transparency
+      document.documentElement.classList.remove('magic-transparent');
+      document.body.classList.remove('magic-transparent');
       
       if (magicModeView) {
         magicModeView.classList.remove('flex');
         magicModeView.classList.add('hidden');
       }
-      
       if (standardUiView) {
         standardUiView.classList.remove('hidden');
-        // Change the main container from a grid to a centered flex layout
-        standardUiView.classList.remove('grid', 'lg:grid-cols-12');
-        standardUiView.classList.add('flex', 'justify-center');
       }
       
       const leftCol = document.querySelector('.lg\\:col-span-5');
       const rightCol = document.querySelector('.lg\\:col-span-7');
-      
-      // Hide the input panel
       if (leftCol) leftCol.classList.add('hidden');
-      
-      // Constrain the review panel so it floats neatly in the center
-      if (rightCol) {
-        rightCol.classList.remove('lg:col-span-7');
-        rightCol.classList.add('w-full', 'max-w-5xl'); 
-      }
+      if (rightCol) rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
     });
   }
   // --- END MAGIC MODE ---
