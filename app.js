@@ -301,6 +301,50 @@ const BUILTIN_EVENT_CODES = {
   YSA:    { title: "Service Assessment", emoji: "📋", category: "general" }
 };
 
+// --- Toast Notification System ---
+class Toast {
+  static show(message, type = 'error') {
+    const containerId = 'rostercal-toast-container';
+    let container = document.getElementById(containerId);
+    
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center space-y-2 pointer-events-none';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    const isError = type === 'error';
+    
+    toast.className = `flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-2xl border backdrop-blur-md transition-all duration-300 transform translate-y-10 opacity-0 ${
+      isError 
+        ? 'bg-red-950/90 border-red-500/50 text-red-200' 
+        : 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
+    }`;
+    
+    toast.innerHTML = `
+      <span class="text-base">${isError ? '⚠️' : '✅'}</span>
+      <span class="text-xs font-bold tracking-tight uppercase">${message}</span>
+    `;
+    
+    container.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-10', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+    });
+
+    // Animate out and remove
+    setTimeout(() => {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('translate-y-10', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+}
+
 // --- Global App State (Instant Memory Ready) ---
 class AppState {
   constructor() {
@@ -1214,7 +1258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch (err) {
         console.error("Magic mode parsing error:", err);
-        alert("Failed to instantly parse roster. Please review manually.");
+        Toast.show("Failed to instantly parse roster. Please review manually.", "error");
       }
     }
   });
@@ -1514,7 +1558,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnParse.addEventListener("click", () => {
       const text = rawInput.value;
       if (!text.trim()) {
-        alert("Please paste your Emirates roster text first.");
+        Toast.show("Please paste your Emirates roster text first.", "error");
         return;
       }
       
@@ -1522,7 +1566,7 @@ document.addEventListener("DOMContentLoaded", () => {
         state.parsedEvents = ParserEngine.parseRawText(text);
       } catch (err) {
         console.error("Fatal roster parsing error:", err);
-        alert("An error occurred while parsing the roster text. Please check the content.");
+        Toast.show("Error parsing roster text. Please check the content.", "error");
         return;
       }
 
