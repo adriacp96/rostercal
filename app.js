@@ -1,7 +1,7 @@
 /**
  * RosterCal — Emirates (EK) Cabin Crew Edition
  * Architecture: ES6 Modular Classes | 100% Client-Side Privacy
- * Features: Zero-Latency Instant Boot | Pure Math Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
+ * Features: Zero-Latency Instant Boot | DST-Aware Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
  * UI Enhanced with Apple Design Principles
  */
 
@@ -112,7 +112,7 @@ const BUILTIN_AIRPORTS = {
   LYS: { icao: "LFLL", city: "Lyon", name: "Lyon-Saint Exupéry Airport", iana: "Europe/Paris", utc_offset: 1 },
   MAA: { icao: "VOMM", city: "Chennai", name: "Chennai International Airport", iana: "Asia/Kolkata", utc_offset: 5.5 },
   MAD: { icao: "LEMD", city: "Madrid", name: "Adolfo Suárez Madrid–Barajas Airport", iana: "Europe/Madrid", utc_offset: 1 },
-  MAN: { icao: "EGCC", "city": "Manchester", name: "Manchester Airport", iana: "Europe/London", utc_offset: 0 },
+  MAN: { icao: "EGCC", city: "Manchester", name: "Manchester Airport", iana: "Europe/London", utc_offset: 0 },
   MCO: { icao: "KMCO", city: "Orlando", name: "Orlando International Airport", iana: "America/New_York", utc_offset: -5 },
   MCT: { icao: "OOMS", city: "Muscat", name: "Muscat International Airport", iana: "Asia/Muscat", utc_offset: 4 },
   MED: { icao: "OEMA", city: "Medina", name: "Prince Mohammad bin Abdulaziz International Airport", iana: "Asia/Riyadh", utc_offset: 3 },
@@ -122,13 +122,13 @@ const BUILTIN_AIRPORTS = {
   MLA: { icao: "LMML", city: "Malta", name: "Malta International Airport", iana: "Europe/Malta", utc_offset: 1 },
   MLE: { icao: "VRMM", city: "Malé", name: "Velana International Airport", iana: "Indian/Maldives", utc_offset: 5 },
   MNL: { icao: "RPLL", city: "Manila", name: "Ninoy Aquino International Airport", iana: "Asia/Manila", utc_offset: 8 },
-  MRU: { icao: "FIMP", "city": "Mauritius", name: "Sir Seewoosagur Ramgoolam International Airport", iana: "Indian/Mauritius", utc_offset: 4 },
+  MRU: { icao: "FIMP", city: "Mauritius", name: "Sir Seewoosagur Ramgoolam International Airport", iana: "Indian/Mauritius", utc_offset: 4 },
   MUC: { icao: "EDDM", city: "Munich", name: "Munich Airport", iana: "Europe/Berlin", utc_offset: 1 },
   MXP: { icao: "LIMC", city: "Milan", name: "Milan Malpensa Airport", iana: "Europe/Rome", utc_offset: 1 },
   NBO: { icao: "HKJK", city: "Nairobi", name: "Jomo Kenyatta International Airport", iana: "Africa/Nairobi", utc_offset: 3 },
   NCE: { icao: "LFMN", city: "Nice", name: "Nice Côte d'Azur Airport", iana: "Europe/Paris", utc_offset: 1 },
   NCL: { icao: "EGNT", city: "Newcastle", name: "Newcastle International Airport", iana: "Europe/London", utc_offset: 0 },
-  NRT: { icao: "RJAA", "city": "Tokyo", name: "Narita International Airport", iana: "Asia/Tokyo", utc_offset: 9 },
+  NRT: { icao: "RJAA", city: "Tokyo", name: "Narita International Airport", iana: "Asia/Tokyo", utc_offset: 9 },
   ORD: { icao: "KORD", city: "Chicago", name: "O'Hare International Airport", iana: "America/Chicago", utc_offset: -6 },
   OSL: { icao: "ENGM", city: "Oslo", name: "Oslo Gardermoen Airport", iana: "Europe/Oslo", utc_offset: 1 },
   PEK: { icao: "ZBAA", city: "Beijing", name: "Beijing Capital International Airport", iana: "Asia/Shanghai", utc_offset: 8 },
@@ -161,7 +161,7 @@ const BUILTIN_AIRPORTS = {
   ZRH: { icao: "LSZH", city: "Zurich", name: "Zurich Airport", iana: "Europe/Zurich", utc_offset: 1 }
 };
 
-// --- Built-in Instant Memory Duty Code Library (Updated Emojis: 🏠 🏖️ 🕒 📚) ---
+// --- Built-in Instant Memory Duty Code Library ---
 const BUILTIN_EVENT_CODES = {
   FLT:    { title: "Emirates Flight", emoji: "✈️", category: "flight" },
   EK:     { title: "Emirates Flight", emoji: "✈️", category: "flight" },
@@ -222,7 +222,7 @@ const BUILTIN_EVENT_CODES = {
   ER71:   { title: "SEP C Recurrent", emoji: "📚", category: "training" },
   ER81:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   ER811:  { title: "SEP Recurrent A380/B777 (Day 1)", emoji: "📚", category: "training" },
-  ER812:  { title: "SEP Recurrent A380/B777 (Day 2)", "emoji": "📚", category: "training" },
+  ER812:  { title: "SEP Recurrent A380/B777 (Day 2)", emoji: "📚", category: "training" },
   ER82:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   ER821:  { title: "SEP Recurrent A380/B777 (Day 1)", emoji: "📚", category: "training" },
   ER822:  { title: "SEP Recurrent A380/B777 (Day 2)", emoji: "📚", category: "training" },
@@ -533,8 +533,58 @@ class FormatEngine {
   }
 }
 
-// --- Universal Hybrid Parser Engine ---
+// --- Universal Hybrid Parser Engine (DST-Aware) ---
 class ParserEngine {
+  // --- Dynamic DST Offset Calculator ---
+  static getOffsetMinutes(ianaZone, dateObj) {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: ianaZone,
+        timeZoneName: 'shortOffset',
+      });
+      const parts = formatter.formatToParts(dateObj);
+      const tzPart = parts.find(p => p.type === 'timeZoneName').value; // e.g., "GMT+2", "GMT-5", "GMT"
+      
+      if (tzPart === 'GMT' || tzPart === 'UTC') return 0;
+      
+      const match = tzPart.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
+      if (match) {
+        const sign = match[1] === '-' ? -1 : 1;
+        const hrs = parseInt(match[2], 10);
+        const mins = match[3] ? parseInt(match[3], 10) : 0;
+        return sign * (hrs * 60 + mins);
+      }
+      return null;
+    } catch (e) {
+      return null; // Fallback trigger if IANA is invalid or unsupported
+    }
+  }
+
+  // --- Dynamic DST-Aware Timezone Engine ---
+  static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
+    const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
+    const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
+    const minutes = parseInt(cleanTime.slice(2, 4), 10) || 0;
+
+    const airport = state.airports[locationCode] || BUILTIN_AIRPORTS[locationCode];
+    const ianaZone = airport?.iana || "Asia/Dubai";
+    const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
+
+    // 1. Create a naive UTC date treating the local time as UTC
+    const naiveDate = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
+    
+    // 2. Extract the true DST-aware offset for that specific date and location
+    let offsetMinutes = ParserEngine.getOffsetMinutes(ianaZone, naiveDate);
+    
+    // 3. Fallback to static math offset if Intl API fails
+    if (offsetMinutes === null) {
+      offsetMinutes = fallbackOffset * 60;
+    }
+
+    // 4. Adjust the naive date by the offset to calculate true UTC
+    return new Date(naiveDate.getTime() - (offsetMinutes * 60000));
+  }
+
   static parseRawText(rawText) {
     const events = [];
     let currentYear = new Date().getFullYear();
@@ -653,12 +703,15 @@ class ParserEngine {
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
-          const repOffset = (origMeta?.utc_offset !== undefined ? origMeta.utc_offset : HOME_UTC_OFFSET);
           
-          const repStartMinutes = repStartUtc.getUTCHours() * 60 + repStartUtc.getUTCMinutes() + Math.round(repOffset * 60);
-          const repStartH = ((Math.floor(repStartMinutes / 60) % 24) + 24) % 24;
-          const repStartM = ((repStartMinutes % 60) + 60) % 60;
-          const repStartTimeStr = String(repStartH).padStart(2, '0') + String(repStartM).padStart(2, '0');
+          const ianaZone = origMeta?.iana || "Asia/Dubai";
+          const repFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: ianaZone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          const repStartTimeStr = repFormatter.format(repStartUtc).replace(':', '');
           const repEndTimeStr = repTime;
 
           const reportEvent = {
@@ -838,22 +891,7 @@ class ParserEngine {
     return events;
   }
 
-  // --- Pure Math Timezone Engine ---
-  static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
-    const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
-    const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
-    const minutes = parseInt(cleanTime.slice(2, 4), 10) || 0;
-
-    const airport = state.airports[locationCode] || BUILTIN_AIRPORTS[locationCode];
-    const fallbackOffset = airport ? (airport.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET) : HOME_UTC_OFFSET;
-
-    const date = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
-    const totalMinutes = (hours * 60 + minutes) - (fallbackOffset * 60);
-    date.setUTCHours(0, Math.round(totalMinutes), 0, 0);
-    return date;
-  }
-
-  // --- Ground Time Detection (Layovers > 4hrs & Turnarounds < 4hrs) ---
+  // --- Ground Time Detection (DST-Aware) ---
   static detectGroundTimes(events) {
     if (state.preferences.autoLayovers === false) return;
 
@@ -892,9 +930,15 @@ class ParserEngine {
 
             const formatLocal = (utcDate, locCode) => {
               try {
-                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
-                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
-                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
+                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
+                const ianaZone = airportMeta?.iana || "Asia/Dubai";
+                const formatter = new Intl.DateTimeFormat('en-GB', {
+                  timeZone: ianaZone,
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                });
+                return formatter.format(utcDate).replace(':', '');
               } catch (e) { return "--:--"; }
             };
 
@@ -958,7 +1002,7 @@ class ParserEngine {
     events.sort((a, b) => a.startUtc - b.startUtc);
   }
 
-  // --- Isolated Station Rest Calculator ---
+  // --- Isolated Station Rest Calculator (DST-Aware) ---
   static enrichLayoverRest(events) {
     try {
       const layovers = events.filter(e => e.category === 'layover');
@@ -992,9 +1036,15 @@ class ParserEngine {
             
             const formatLocal = (utcDate, locCode) => {
               try {
-                const offsetHours = (state.airports[locCode] || BUILTIN_AIRPORTS[locCode])?.utc_offset || 0;
-                const d = new Date(utcDate.getTime() + offsetHours * 3600000);
-                return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
+                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
+                const ianaZone = airportMeta?.iana || "Asia/Dubai";
+                const formatter = new Intl.DateTimeFormat('en-GB', {
+                  timeZone: ianaZone,
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                });
+                return formatter.format(utcDate).replace(':', '');
               } catch (e) { return "--:--"; }
             };
             lay.startTime = formatLocal(lay.startUtc, station);
@@ -1243,8 +1293,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (magicBtnReview) {
     magicBtnReview.addEventListener('click', () => {
-      // Keep the transparency/blur so the background stays blurred
-      
       if (magicModeView) {
         magicModeView.classList.remove('flex');
         magicModeView.classList.add('hidden');
@@ -1257,7 +1305,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const rightCol = document.querySelector('.lg\\:col-span-7');
       if (leftCol) leftCol.classList.add('hidden');
       if (rightCol) {
-        // Expand the right column to take full width and center it gracefully
         rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
         rightCol.classList.add('max-w-4xl', 'mx-auto', 'w-full');
       }
