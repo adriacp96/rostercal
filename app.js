@@ -722,9 +722,20 @@ class ParserEngine {
   static parseRawText(rawText) {
     const events = [];
     
-    // Attempt to extract a 5 or 6-digit staff number from the text
-    const staffMatch = rawText.match(/\b(3\d{4,5}|5\d{4,5})\b/); 
+    // Scan the first 500 characters of the roster (the header)
+    const headerText = rawText.substring(0, 500);
+    
+    // 1. Try to find a specifically labeled number (e.g., "Staff No: 123456" or "Emp: 12345")
+    let staffMatch = headerText.match(/(?:staff|emp|id|no)[^\d]*(\d{5,6})/i);
+    
+    // 2. If no label is found, grab the very first standalone 5 or 6 digit number
+    if (!staffMatch) {
+      staffMatch = headerText.match(/\b(\d{5,6})\b/);
+    }
+    
     state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
+    
+    let currentYear = new Date().getFullYear();
     
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
