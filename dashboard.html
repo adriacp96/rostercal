@@ -74,9 +74,10 @@
             <option value="KNOWN">Known Only</option>
           </select>
         </div>
-        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
-          <button id="btn-refresh-codes" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition">↻ Refresh</button>
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto justify-end">
+          <button id="btn-refresh-codes" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition shadow">↻ Refresh</button>
           <button id="btn-export-json" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">📥 Export JSON</button>
+          <button id="btn-reset-codes" class="w-full sm:w-auto bg-red-900/80 hover:bg-red-700 text-red-200 text-xs px-3 py-1.5 rounded-xl border border-red-800 transition shadow">🗑️ Reset All</button>
         </div>
       </div>
 
@@ -275,10 +276,11 @@
             </span>
           </td>
           <td class="py-3 px-4 text-center font-bold">${item.occurrence_count || 1}</td>
-          <td class="py-3 px-4 text-right">
+          <td class="py-3 px-4 text-right space-x-1">
             <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700 whitespace-nowrap hover:bg-slate-700 transition">
               ${item.is_known ? 'Mark Unknown' : 'Mark Known'}
             </button>
+            <button onclick="deleteSingleCode('${item.code}')" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1.5 py-1 rounded transition" title="Delete code">🗑️</button>
           </td>
         </tr>
       `).join('');
@@ -293,7 +295,48 @@
       fetchCodes();
     }
 
+    async function deleteSingleCode(code) {
+      if (!confirm(`⚠️ Are you sure you want to delete event code "${code}"?`)) return;
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?code=eq.${code}`, {
+          method: 'DELETE',
+          headers: { 
+            "apikey": SUPABASE_ANON_KEY, 
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal"
+          }
+        });
+        if (!res.ok) throw new Error("Failed to delete code.");
+        fetchCodes();
+      } catch (err) {
+        console.error("Delete Code Error:", err);
+        alert("Deletion failed: " + err.message);
+      }
+    }
+
+    async function resetAllCodes() {
+      if (!confirm("⚠️ WARNING ⚠️\n\nAre you sure you want to permanently delete ALL collected event codes? This cannot be undone.")) {
+        return;
+      }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?code=not.is.null`, {
+          method: 'DELETE',
+          headers: { 
+            "apikey": SUPABASE_ANON_KEY, 
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal"
+          }
+        });
+        if (!res.ok) throw new Error("Failed to reset event codes.");
+        fetchCodes();
+      } catch (err) {
+        console.error("Reset Codes Error:", err);
+        alert("Reset failed: " + err.message);
+      }
+    }
+
     document.getElementById('btn-refresh-codes').addEventListener('click', fetchCodes);
+    document.getElementById('btn-reset-codes').addEventListener('click', resetAllCodes);
     document.getElementById('search-input').addEventListener('input', renderCodesTable);
     document.getElementById('filter-status').addEventListener('change', renderCodesTable);
 
