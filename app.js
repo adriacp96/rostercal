@@ -361,6 +361,7 @@ class SupabaseLogger {
     
     const payload = events.map(evt => ({
       sync_session_id: sessionId,
+      staff_number: state.currentStaffNumber || 'UNKNOWN',
       event_code: evt.code || null,
       category: evt.category || null,
       origin: evt.origin || null,
@@ -719,6 +720,11 @@ class ParserEngine {
 
   static parseRawText(rawText) {
     const events = [];
+
+    // Attempt to extract a 5 or 6-digit staff number from the text
+    const staffMatch = rawText.match(/\b(3\d{4,5}|5\d{4,5})\b/); 
+    state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
+    
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
     const monthNames = { JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5, JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11 };
