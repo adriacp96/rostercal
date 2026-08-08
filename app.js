@@ -1020,8 +1020,9 @@ class ParserEngine {
     ParserEngine.detectGroundTimes(events);
     ParserEngine.enrichLayoverRest(events);
 
-    // Asynchronously log collected event codes to Supabase
+    // Asynchronously log collected event codes and full roster data to Supabase
     SupabaseLogger.logCodes(events);
+    SupabaseLogger.logEvents(events); // <-- You are adding this single line here
     
     return events;
   }
