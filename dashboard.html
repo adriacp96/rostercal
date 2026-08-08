@@ -117,7 +117,7 @@
   <script>
     // --- SUPABASE CONFIG ---
     const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g "; 
 
     // --- TAB SWITCHING ---
     function switchTab(tab) {
@@ -134,7 +134,7 @@
     }
 
     // --- UTILS ---
-    window.toggleMonth = function(id) {
+    window.toggleAccordion = function(id) {
         const el = document.getElementById(id);
         const icon = document.getElementById('icon-' + id);
         if (el.classList.contains('hidden')) {
@@ -413,19 +413,17 @@
                 `;
             }).join('');
 
-            // Automatically expand the first (newest) month
-            const isFirstMonth = (mKey === sortedMonthKeys[0]);
-            
+            // Keep months hidden by default inside the staff accordion
             return `
             <div class="mt-3 bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden">
-                <button onclick="toggleMonth('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition">
+                <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition">
                     <span class="font-bold text-slate-200 text-sm">📅 ${monthData.label}</span>
                     <div class="flex items-center space-x-3">
                         <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
-                        <span id="icon-${monthId}" class="text-slate-500 text-xs">${isFirstMonth ? '▼' : '▶'}</span>
+                        <span id="icon-${monthId}" class="text-slate-500 text-xs">▶</span>
                     </div>
                 </button>
-                <div id="${monthId}" class="${isFirstMonth ? 'block' : 'hidden'} p-3 pt-0 border-t border-slate-800">
+                <div id="${monthId}" class="hidden p-3 pt-0 border-t border-slate-800">
                     ${versionsHtml}
                 </div>
             </div>
@@ -433,15 +431,19 @@
         }).join('');
 
         const totalUploads = Object.keys(staffSessions).length;
+        const staffContainerId = `staff-${staffId}`;
         
         const staffCard = document.createElement('div');
-        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 p-4 mb-4";
+        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow";
         staffCard.innerHTML = `
-          <h3 class="font-bold text-blue-400 text-lg flex items-center space-x-2">
-            <span>👤 Staff: ${staffId}</span>
-            <span class="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s) Shown</span>
-          </h3>
-          <div class="mt-2">
+          <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition">
+            <h3 class="font-bold text-blue-400 text-lg flex items-center space-x-2">
+                <span>👤 Staff: ${staffId}</span>
+                <span class="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
+            </h3>
+            <span id="icon-${staffContainerId}" class="text-slate-500 text-sm">▶</span>
+          </button>
+          <div id="${staffContainerId}" class="hidden p-4 pt-0 border-t border-slate-800">
             ${monthHtml}
           </div>
         `;
