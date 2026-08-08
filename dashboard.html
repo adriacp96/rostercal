@@ -104,8 +104,9 @@
             <option value="OLDEST">Sort: Oldest</option>
           </select>
         </div>
-        <div class="flex justify-end w-full lg:w-auto">
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto justify-end">
           <button id="btn-refresh-rosters" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition w-full sm:w-auto">↻ Fetch Rosters</button>
+          <button id="btn-reset-rosters" class="bg-red-900/80 hover:bg-red-700 text-red-200 text-xs px-3 py-1.5 rounded-xl border border-red-800 transition w-full sm:w-auto">🗑️ Reset All Data</button>
         </div>
       </div>
 
@@ -272,6 +273,39 @@
       }
     }
 
+    async function resetAllRosters() {
+      if (!confirm("⚠️ WARNING ⚠️\n\nAre you sure you want to permanently delete ALL parsed rosters from the database? This cannot be undone.")) {
+        return;
+      }
+      
+      const container = document.getElementById('rosters-container');
+      container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">Deleting all roster data...</div>`;
+      
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/roster_events?id=not.is.null`, {
+          method: 'DELETE',
+          headers: { 
+            "apikey": SUPABASE_ANON_KEY, 
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal"
+          }
+        });
+        
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || JSON.stringify(errData));
+        }
+
+        allRosterEvents = [];
+        updateRosterMonthFilter();
+        renderRosters();
+      } catch (err) {
+        console.error("Reset Error:", err);
+        alert("Failed to delete rosters: " + err.message);
+        fetchRosters();
+      }
+    }
+
     function updateRosterMonthFilter() {
         const monthSelect = document.getElementById('filter-rosters-month');
         const currentVal = monthSelect.value;
@@ -406,7 +440,7 @@
                 return `
                 <div class="mt-3 pl-2 sm:pl-4 border-l-2 border-slate-700">
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-2 space-y-1 sm:space-y-0">
-                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1">— Imp: ${dateStr}</span></span>
+                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1 hidden sm:inline">— Imp: ${dateStr}</span></span>
                     <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium self-start sm:self-auto">${vData.events.length} events</span>
                   </div>
                   <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto overflow-x-auto whitespace-nowrap font-mono text-[10px] text-slate-400">
@@ -458,6 +492,7 @@
 
     // Attach listeners
     document.getElementById('btn-refresh-rosters').addEventListener('click', fetchRosters);
+    document.getElementById('btn-reset-rosters').addEventListener('click', resetAllRosters);
     document.getElementById('search-rosters').addEventListener('input', renderRosters);
     document.getElementById('filter-rosters-month').addEventListener('change', renderRosters);
     document.getElementById('sort-rosters').addEventListener('change', renderRosters);
