@@ -52,7 +52,7 @@
 
       <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3">
         <div class="flex space-x-3">
-          <input type="text" id="search-input" placeholder="Search code..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500">
+          <input type="text" id="search-input" placeholder="Search code or description..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500">
           <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
             <option value="UNKNOWN" selected>Unknown Only</option>
             <option value="ALL">All Codes</option>
@@ -66,19 +66,22 @@
       </div>
 
       <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden shadow">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase">
-              <th class="py-3 px-4">Code</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4 text-center">Occurrences</th>
-              <th class="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody id="codes-table-body" class="divide-y divide-slate-800">
-            <tr><td colspan="4" class="py-6 text-center text-slate-500">Loading codes...</td></tr>
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase">
+                <th class="py-3 px-4">Code</th>
+                <th class="py-3 px-4">Title / Description</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-center">Occurrences</th>
+                <th class="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="codes-table-body" class="divide-y divide-slate-800">
+              <tr><td colspan="5" class="py-6 text-center text-slate-500">Loading codes...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -157,22 +160,29 @@
       const search = document.getElementById('search-input').value.toUpperCase();
       const filter = document.getElementById('filter-status').value;
       const filtered = allCodes.filter(item => {
-        const matchesSearch = item.code.toUpperCase().includes(search);
+        const titleStr = (item.raw_title || "").toUpperCase();
+        const matchesSearch = item.code.toUpperCase().includes(search) || titleStr.includes(search);
         const matchesStatus = filter === 'ALL' || (filter === 'UNKNOWN' && !item.is_known) || (filter === 'KNOWN' && item.is_known);
         return matchesSearch && matchesStatus;
       });
 
+      if (filtered.length === 0) {
+        document.getElementById('codes-table-body').innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500">No matching codes found.</td></tr>`;
+        return;
+      }
+
       document.getElementById('codes-table-body').innerHTML = filtered.map(item => `
         <tr class="hover:bg-slate-800/40">
-          <td class="py-3 px-4 font-bold text-blue-300">${item.code}</td>
+          <td class="py-3 px-4 font-bold text-blue-300 whitespace-nowrap">${item.code}</td>
+          <td class="py-3 px-4 text-slate-300 truncate max-w-[200px]" title="${item.raw_title || '-'}">${item.raw_title || '-'}</td>
           <td class="py-3 px-4">
-            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.is_known ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'}">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap ${item.is_known ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'}">
               ${item.is_known ? 'Known' : 'Unknown'}
             </span>
           </td>
           <td class="py-3 px-4 text-center font-bold">${item.occurrence_count || 1}</td>
           <td class="py-3 px-4 text-right">
-            <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
+            <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700 whitespace-nowrap">
               ${item.is_known ? 'Mark Unknown' : 'Mark Known'}
             </button>
           </td>
