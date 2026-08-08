@@ -725,10 +725,10 @@ class ParserEngine {
     // Scan the first 500 characters of the roster (the header)
     const headerText = rawText.substring(0, 500);
     
-    // 1. Try to find a specifically labeled number (e.g., "Staff No: 123456" or "Emp: 123456")
-    let staffMatch = headerText.match(/(?:staff|emp|id|no)[^\d]*(\d{6})/i);
+    // 1. Try to find specifically "Staff No.:" followed by 6 digits
+    let staffMatch = headerText.match(/Staff No\.:\s*(\d{6})/i);
     
-    // 2. If no label is found, grab the very first standalone 6 digit number
+    // 2. Fallback to generic 6-digit number if that exact string isn't found
     if (!staffMatch) {
       staffMatch = headerText.match(/\b(\d{6})\b/);
     }
