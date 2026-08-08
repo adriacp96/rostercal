@@ -12,9 +12,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const HOME_BASE = "DXB";
 const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
 
-const HOME_BASE = "DXB";
-const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
-
 // --- Built-in Instant Memory Database (145+ Airports) ---
 const BUILTIN_AIRPORTS = {
   ABJ: { icao: "DIAP", city: "Abidjan", name: "Félix-Houphouët-Boigny International Airport", iana: "Africa/Abidjan", utc_offset: 0 },
@@ -307,6 +304,54 @@ const BUILTIN_EVENT_CODES = {
   UIV1:   { title: "US Visa Interview (AM)", emoji: "🛂", category: "general" },
   YSA:    { title: "Service Assessment", emoji: "📋", category: "general" }
 };
+
+// --- Supabase Async Code Logger Engine ---
+class SupabaseLogger {
+  static async logCodes(events) {
+    if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID") || !SUPABASE_ANON_KEY) {
+      console.log("ℹ️ Supabase credentials not configured. Skipping code collection.");
+      return;
+    }
+
+    const uniqueCodesMap = new Map();
+
+    events.forEach(evt => {
+      if (!evt.code) return;
+
+      const code = evt.code.toUpperCase();
+      const isKnown = !!(state.eventCodes[code] || BUILTIN_EVENT_CODES[code]);
+      
+      if (!uniqueCodesMap.has(code)) {
+        uniqueCodesMap.set(code, {
+          code: code,
+          raw_title: evt.rawTitle || evt.title || evt.rawText || "",
+          is_known: isKnown,
+          last_seen: new Date().toISOString()
+        });
+      }
+    });
+
+    const payload = Array.from(uniqueCodesMap.values());
+    if (payload.length === 0) return;
+
+    try {
+      const endpoint = `${SUPABASE_URL}/rest/v1/collected_event_codes`;
+      
+      await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Prefer": "resolution=merge-duplicates"
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn("Supabase code logging failed:", err);
+    }
+  }
+}
 
 // --- Toast Notification System ---
 class Toast {
@@ -938,6 +983,9 @@ class ParserEngine {
     // Auto-detect layovers & turnarounds before enriching them
     ParserEngine.detectGroundTimes(events);
     ParserEngine.enrichLayoverRest(events);
+
+    // Asynchronously log collected event codes to Supabase
+    SupabaseLogger.logCodes(events);
     
     return events;
   }
