@@ -51,15 +51,15 @@
       </div>
 
       <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3">
-        <div class="flex space-x-3">
-          <input type="text" id="search-input" placeholder="Search code or description..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500">
+        <div class="flex space-x-3 w-full sm:w-auto">
+          <input type="text" id="search-input" placeholder="Search code or description..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-64">
           <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
             <option value="UNKNOWN" selected>Unknown Only</option>
             <option value="ALL">All Codes</option>
             <option value="KNOWN">Known Only</option>
           </select>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
           <button id="btn-refresh-codes" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700">↻ Refresh</button>
           <button id="btn-export-json" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">📥 Export Unknown Codes (.json)</button>
         </div>
@@ -86,13 +86,24 @@
     </div>
 
     <!-- VIEW 2: PARSED ROSTERS -->
-    <div id="view-rosters" class="hidden space-y-6 animate-fade-in">
-      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
-        <div>
-          <h2 class="text-sm font-bold text-slate-200">Rosters by Staff Number</h2>
-          <p class="text-[10px] text-slate-400">Grouped by Month and tracked by version history.</p>
+    <div id="view-rosters" class="hidden space-y-4 animate-fade-in">
+      
+      <!-- Rosters Search & Filter Bar -->
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3 mb-2">
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <input type="text" id="search-rosters" placeholder="Search Staff Number..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-48">
+          <select id="filter-rosters-month" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <option value="ALL" selected>All Months</option>
+            <!-- Dynamically populated -->
+          </select>
+          <select id="sort-rosters" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <option value="NEWEST" selected>Sort: Newest Uploads</option>
+            <option value="OLDEST">Sort: Oldest Uploads</option>
+          </select>
         </div>
-        <button id="btn-refresh-rosters" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700">↻ Fetch Rosters</button>
+        <div class="flex justify-end w-full sm:w-auto">
+          <button id="btn-refresh-rosters" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition w-full sm:w-auto">↻ Fetch Rosters</button>
+        </div>
       </div>
 
       <div id="rosters-container" class="space-y-4">
@@ -230,6 +241,8 @@
     });
 
     // --- VIEW 2: ROSTERS LOGIC ---
+    let allRosterEvents = [];
+
     async function fetchRosters() {
       const container = document.getElementById('rosters-container');
       container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">Loading rosters...</div>`;
@@ -238,37 +251,14 @@
           headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
         });
         
-        const rawEvents = await res.json();
+        allRosterEvents = await res.json();
         
         if (!res.ok) {
-          throw new Error(rawEvents.message || JSON.stringify(rawEvents));
+          throw new Error(allRosterEvents.message || JSON.stringify(allRosterEvents));
         }
 
-        // Group by staff_number -> sync_session_id
-        const grouped = {};
-        rawEvents.forEach(evt => {
-          const staff = evt.staff_number || "UNKNOWN";
-          const session = evt.sync_session_id;
-
-          if (!grouped[staff]) grouped[staff] = { sessions: {} };
-          
-          if (!grouped[staff].sessions[session]) {
-            grouped[staff].sessions[session] = { 
-              timestamp: evt.created_at, 
-              events: [],
-              // Fallback to created_at if start_utc is missing entirely
-              rosterDate: evt.start_utc ? new Date(evt.start_utc) : new Date(evt.created_at) 
-            };
-          } else {
-             // Find the earliest start date in the session to reliably determine the roster's month
-             if (evt.start_utc && new Date(evt.start_utc) < grouped[staff].sessions[session].rosterDate) {
-                 grouped[staff].sessions[session].rosterDate = new Date(evt.start_utc);
-             }
-          }
-          grouped[staff].sessions[session].events.push(evt);
-        });
-
-        renderRosters(grouped);
+        updateRosterMonthFilter();
+        renderRosters();
       } catch (err) {
         console.error("Fetch Rosters Error:", err);
         container.innerHTML = `
@@ -279,21 +269,108 @@
       }
     }
 
-    function renderRosters(groupedData) {
+    function updateRosterMonthFilter() {
+        const monthSelect = document.getElementById('filter-rosters-month');
+        const currentVal = monthSelect.value;
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const uniqueMonths = new Set();
+        allRosterEvents.forEach(evt => {
+            const d = evt.start_utc ? new Date(evt.start_utc) : new Date(evt.created_at);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            uniqueMonths.add(key);
+        });
+
+        // Sort months descending (Newest first)
+        const sortedMonths = Array.from(uniqueMonths).sort((a, b) => b.localeCompare(a));
+        
+        let html = `<option value="ALL">All Months</option>`;
+        sortedMonths.forEach(mKey => {
+            const [y, m] = mKey.split('-');
+            const label = `${monthNames[parseInt(m) - 1]} ${y}`;
+            html += `<option value="${mKey}">${label}</option>`;
+        });
+        
+        monthSelect.innerHTML = html;
+        if (sortedMonths.includes(currentVal)) {
+            monthSelect.value = currentVal;
+        }
+    }
+
+    function renderRosters() {
       const container = document.getElementById('rosters-container');
       container.innerHTML = "";
 
-      if (Object.keys(groupedData).length === 0) {
+      if (allRosterEvents.length === 0) {
         container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
         return;
       }
 
+      const search = document.getElementById('search-rosters').value.trim().toUpperCase();
+      const monthFilter = document.getElementById('filter-rosters-month').value;
+      const sortOrder = document.getElementById('sort-rosters').value;
+
+      // Group by staff_number -> sync_session_id
+      const grouped = {};
+      allRosterEvents.forEach(evt => {
+        const staff = evt.staff_number || "UNKNOWN";
+        
+        // Apply staff number search filter
+        if (search && !staff.toUpperCase().includes(search)) return;
+
+        const session = evt.sync_session_id;
+
+        if (!grouped[staff]) grouped[staff] = { sessions: {} };
+        
+        if (!grouped[staff].sessions[session]) {
+          grouped[staff].sessions[session] = { 
+            timestamp: evt.created_at, 
+            events: [],
+            rosterDate: evt.start_utc ? new Date(evt.start_utc) : new Date(evt.created_at) 
+          };
+        } else {
+           if (evt.start_utc && new Date(evt.start_utc) < grouped[staff].sessions[session].rosterDate) {
+               grouped[staff].sessions[session].rosterDate = new Date(evt.start_utc);
+           }
+        }
+        grouped[staff].sessions[session].events.push(evt);
+      });
+
+      // Filter sessions by specific month and clean up empty staffs
+      Object.keys(grouped).forEach(staffId => {
+          const sessions = grouped[staffId].sessions;
+          Object.keys(sessions).forEach(sessionId => {
+              const d = sessions[sessionId].rosterDate;
+              const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              
+              if (monthFilter !== 'ALL' && mKey !== monthFilter) {
+                  delete sessions[sessionId];
+              }
+          });
+          
+          if (Object.keys(sessions).length === 0) {
+              delete grouped[staffId];
+          }
+      });
+
+      const staffIds = Object.keys(grouped);
+      
+      if (staffIds.length === 0) {
+         container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No rosters match your search/filters.</div>`;
+         return;
+      }
+
+      // Sort staff by newest or oldest upload
+      staffIds.sort((a, b) => {
+          const newestA = Math.max(...Object.values(grouped[a].sessions).map(s => new Date(s.timestamp).getTime()));
+          const newestB = Math.max(...Object.values(grouped[b].sessions).map(s => new Date(s.timestamp).getTime()));
+          return sortOrder === 'NEWEST' ? newestB - newestA : newestA - newestB;
+      });
+
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-      Object.keys(groupedData).forEach(staffId => {
-        const staffSessions = groupedData[staffId].sessions;
-        
-        // Group sessions by Month (YYYY-MM)
+      staffIds.forEach(staffId => {
+        const staffSessions = grouped[staffId].sessions;
         const sessionsByMonth = {};
         
         Object.keys(staffSessions).forEach(sessionId => {
@@ -308,7 +385,7 @@
             sessionsByMonth[monthKey].sessions.push({ id: sessionId, ...sData });
         });
 
-        // Sort months chronologically (Newest month first)
+        // Sort months chronologically
         const sortedMonthKeys = Object.keys(sessionsByMonth).sort((a, b) => b.localeCompare(a));
 
         let monthHtml = sortedMonthKeys.map(mKey => {
@@ -326,7 +403,7 @@
                 return `
                 <div class="mt-3 pl-4 border-l-2 border-slate-700">
                   <div class="flex justify-between items-center text-xs mb-2">
-                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1">— Imported: ${dateStr}</span></span>
+                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1 hidden sm:inline">— Imported: ${dateStr}</span></span>
                     <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium">${vData.events.length} events</span>
                   </div>
                   <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-400">
@@ -336,16 +413,19 @@
                 `;
             }).join('');
 
+            // Automatically expand the first (newest) month
+            const isFirstMonth = (mKey === sortedMonthKeys[0]);
+            
             return `
             <div class="mt-3 bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden">
                 <button onclick="toggleMonth('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition">
                     <span class="font-bold text-slate-200 text-sm">📅 ${monthData.label}</span>
                     <div class="flex items-center space-x-3">
                         <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
-                        <span id="icon-${monthId}" class="text-slate-500 text-xs">▶</span>
+                        <span id="icon-${monthId}" class="text-slate-500 text-xs">${isFirstMonth ? '▼' : '▶'}</span>
                     </div>
                 </button>
-                <div id="${monthId}" class="hidden p-3 pt-0 border-t border-slate-800">
+                <div id="${monthId}" class="${isFirstMonth ? 'block' : 'hidden'} p-3 pt-0 border-t border-slate-800">
                     ${versionsHtml}
                 </div>
             </div>
@@ -359,7 +439,7 @@
         staffCard.innerHTML = `
           <h3 class="font-bold text-blue-400 text-lg flex items-center space-x-2">
             <span>👤 Staff: ${staffId}</span>
-            <span class="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Total Uploads</span>
+            <span class="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s) Shown</span>
           </h3>
           <div class="mt-2">
             ${monthHtml}
@@ -369,7 +449,11 @@
       });
     }
 
+    // Attach listeners
     document.getElementById('btn-refresh-rosters').addEventListener('click', fetchRosters);
+    document.getElementById('search-rosters').addEventListener('input', renderRosters);
+    document.getElementById('filter-rosters-month').addEventListener('change', renderRosters);
+    document.getElementById('sort-rosters').addEventListener('change', renderRosters);
 
     // Initial load
     fetchCodes();
