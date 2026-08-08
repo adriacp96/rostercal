@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     /* Hide scrollbar for cleaner UI */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
   </style>
@@ -25,9 +25,9 @@
     </div>
     
     <!-- Tab Navigation -->
-    <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-medium border-t border-slate-800/50 pt-2">
-      <button id="tab-codes" onclick="switchTab('codes')" class="pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition">Event Codes</button>
-      <button id="tab-rosters" onclick="switchTab('rosters')" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition">Parsed Rosters</button>
+    <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-medium border-t border-slate-800/50 pt-2 overflow-x-auto no-scrollbar">
+      <button id="tab-codes" onclick="switchTab('codes')" class="pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition whitespace-nowrap">Event Codes</button>
+      <button id="tab-rosters" onclick="switchTab('rosters')" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition whitespace-nowrap">Parsed Rosters</button>
     </div>
   </header>
 
@@ -35,6 +35,8 @@
 
     <!-- VIEW 1: CODES COLLECTION -->
     <div id="view-codes" class="block space-y-6 animate-fade-in">
+      
+      <!-- Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 shadow">
           <p class="text-[10px] text-slate-400 uppercase font-bold">Total Collected</p>
@@ -50,24 +52,26 @@
         </div>
       </div>
 
-      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3">
-        <div class="flex space-x-3 w-full sm:w-auto">
+      <!-- Filters & Actions -->
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col lg:flex-row justify-between gap-3">
+        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
           <input type="text" id="search-input" placeholder="Search code or description..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-64">
-          <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+          <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full sm:w-auto">
             <option value="UNKNOWN" selected>Unknown Only</option>
             <option value="ALL">All Codes</option>
             <option value="KNOWN">Known Only</option>
           </select>
         </div>
-        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-          <button id="btn-refresh-codes" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700">↻ Refresh</button>
-          <button id="btn-export-json" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">📥 Export Unknown Codes (.json)</button>
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+          <button id="btn-refresh-codes" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition">↻ Refresh</button>
+          <button id="btn-export-json" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">📥 Export JSON</button>
         </div>
       </div>
 
+      <!-- Table -->
       <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden shadow">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
+          <table class="w-full text-left text-xs border-collapse min-w-[600px]">
             <thead>
               <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase">
                 <th class="py-3 px-4">Code</th>
@@ -89,19 +93,18 @@
     <div id="view-rosters" class="hidden space-y-4 animate-fade-in">
       
       <!-- Rosters Search & Filter Bar -->
-      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3 mb-2">
-        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
-          <input type="text" id="search-rosters" placeholder="Search Staff Number..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-48">
-          <select id="filter-rosters-month" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col lg:flex-row justify-between gap-3 mb-2">
+        <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full lg:w-auto">
+          <input type="text" id="search-rosters" placeholder="Staff Number..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-48">
+          <select id="filter-rosters-month" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full sm:w-auto">
             <option value="ALL" selected>All Months</option>
-            <!-- Dynamically populated -->
           </select>
-          <select id="sort-rosters" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
-            <option value="NEWEST" selected>Sort: Newest Uploads</option>
-            <option value="OLDEST">Sort: Oldest Uploads</option>
+          <select id="sort-rosters" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full sm:w-auto">
+            <option value="NEWEST" selected>Sort: Newest</option>
+            <option value="OLDEST">Sort: Oldest</option>
           </select>
         </div>
-        <div class="flex justify-end w-full sm:w-auto">
+        <div class="flex justify-end w-full lg:w-auto">
           <button id="btn-refresh-rosters" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition w-full sm:w-auto">↻ Fetch Rosters</button>
         </div>
       </div>
@@ -117,7 +120,7 @@
   <script>
     // --- SUPABASE CONFIG ---
     const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g "; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
 
     // --- TAB SWITCHING ---
     function switchTab(tab) {
@@ -126,8 +129,8 @@
       document.getElementById('view-rosters').classList.toggle('hidden', tab !== 'rosters');
       document.getElementById('view-rosters').classList.toggle('block', tab === 'rosters');
       
-      const activeClass = "pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition";
-      const inactiveClass = "pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition";
+      const activeClass = "pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition whitespace-nowrap";
+      const inactiveClass = "pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition whitespace-nowrap";
       
       document.getElementById('tab-codes').className = tab === 'codes' ? activeClass : inactiveClass;
       document.getElementById('tab-rosters').className = tab === 'rosters' ? activeClass : inactiveClass;
@@ -185,7 +188,7 @@
       document.getElementById('codes-table-body').innerHTML = filtered.map(item => `
         <tr class="hover:bg-slate-800/40">
           <td class="py-3 px-4 font-bold text-blue-300 whitespace-nowrap">${item.code}</td>
-          <td class="py-3 px-4 text-slate-300 truncate max-w-[200px]" title="${item.raw_title || '-'}">${item.raw_title || '-'}</td>
+          <td class="py-3 px-4 text-slate-300 truncate max-w-[150px] sm:max-w-[200px]" title="${item.raw_title || '-'}">${item.raw_title || '-'}</td>
           <td class="py-3 px-4">
             <span class="px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap ${item.is_known ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'}">
               ${item.is_known ? 'Known' : 'Unknown'}
@@ -401,29 +404,31 @@
                 const versionNum = sortedVersions.length - index; // Oldest is v1, newest is highest number
                 
                 return `
-                <div class="mt-3 pl-4 border-l-2 border-slate-700">
-                  <div class="flex justify-between items-center text-xs mb-2">
-                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1 hidden sm:inline">— Imported: ${dateStr}</span></span>
-                    <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium">${vData.events.length} events</span>
+                <div class="mt-3 pl-2 sm:pl-4 border-l-2 border-slate-700">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-2 space-y-1 sm:space-y-0">
+                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1">— Imp: ${dateStr}</span></span>
+                    <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium self-start sm:self-auto">${vData.events.length} events</span>
                   </div>
-                  <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-400">
+                  <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto overflow-x-auto whitespace-nowrap font-mono text-[10px] text-slate-400">
                     ${vData.events.map(e => `[${e.event_code || '??'}] ${e.category || '-'} | ${e.origin || '-'}-${e.destination || '-'} | ${e.start_utc ? e.start_utc.slice(0,10) : ''}`).join('<br>')}
                   </div>
                 </div>
                 `;
             }).join('');
 
-            // Keep months hidden by default inside the staff accordion
+            // Automatically expand the first (newest) month
+            const isFirstMonth = (mKey === sortedMonthKeys[0]);
+            
             return `
             <div class="mt-3 bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden">
                 <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition">
                     <span class="font-bold text-slate-200 text-sm">📅 ${monthData.label}</span>
                     <div class="flex items-center space-x-3">
-                        <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
-                        <span id="icon-${monthId}" class="text-slate-500 text-xs">▶</span>
+                        <span class="text-[10px] sm:text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
+                        <span id="icon-${monthId}" class="text-slate-500 text-xs">${isFirstMonth ? '▼' : '▶'}</span>
                     </div>
                 </button>
-                <div id="${monthId}" class="hidden p-3 pt-0 border-t border-slate-800">
+                <div id="${monthId}" class="${isFirstMonth ? 'block' : 'hidden'} p-3 pt-0 border-t border-slate-800">
                     ${versionsHtml}
                 </div>
             </div>
@@ -434,12 +439,12 @@
         const staffContainerId = `staff-${staffId}`;
         
         const staffCard = document.createElement('div');
-        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow";
+        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow mb-4";
         staffCard.innerHTML = `
           <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition">
-            <h3 class="font-bold text-blue-400 text-lg flex items-center space-x-2">
+            <h3 class="font-bold text-blue-400 text-base sm:text-lg flex items-center space-x-2">
                 <span>👤 Staff: ${staffId}</span>
-                <span class="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
+                <span class="text-[10px] sm:text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
             </h3>
             <span id="icon-${staffContainerId}" class="text-slate-500 text-sm">▶</span>
           </button>
