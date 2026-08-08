@@ -351,6 +351,42 @@ class SupabaseLogger {
       console.warn("Supabase code logging failed:", err);
     }
   }
+
+  static async logEvents(events) {
+    if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID") || !SUPABASE_ANON_KEY) return;
+    if (events.length === 0) return;
+    
+    // Generate a unique ID for this specific paste action to group the rows together
+    const sessionId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+    
+    const payload = events.map(evt => ({
+      sync_session_id: sessionId,
+      event_code: evt.code || null,
+      category: evt.category || null,
+      origin: evt.origin || null,
+      destination: evt.destination || null,
+      start_utc: evt.startUtc && !isNaN(evt.startUtc) ? evt.startUtc.toISOString() : null,
+      end_utc: evt.endUtc && !isNaN(evt.endUtc) ? evt.endUtc.toISOString() : null,
+      raw_text: evt.rawText || ""
+    }));
+
+    try {
+      const endpoint = `${SUPABASE_URL}/rest/v1/roster_events`;
+      
+      await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Prefer": "return=minimal" // Tells Supabase not to send the payload back, saving bandwidth
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn("Supabase full event logging failed:", err);
+    }
+  }
 }
 
 // --- Toast Notification System ---
