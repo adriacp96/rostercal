@@ -3,157 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RosterCal — Code Collection Dashboard</title>
+  <title>RosterCal Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Hide scrollbar for cleaner UI */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+  </style>
 </head>
-<body class="text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white relative">
+<body class="text-slate-100 min-h-screen bg-slate-950 font-sans flex flex-col selection:bg-blue-500 selection:text-white relative">
 
-  <!-- Header -->
-  <header class="apple-glass z-50 relative border-b border-slate-800">
+  <!-- Header & Navigation -->
+  <header class="apple-glass z-50 sticky top-0 border-b border-slate-800 backdrop-blur-md bg-slate-950/80">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 flex items-center justify-center">
-          <img src="calendar.png" alt="RosterCal Logo" class="w-8 h-8 object-contain">
-        </div>
-        <h1 class="text-xl font-extrabold animated-blue-text bg-clip-text text-transparent">RosterCal Admin</h1>
+        <h1 class="text-xl font-extrabold text-white tracking-tight">RosterCal Admin</h1>
       </div>
       <a href="index.html" class="text-xs text-slate-400 hover:text-white transition font-medium">← Back to App</a>
     </div>
+    
+    <!-- Tab Navigation -->
+    <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-medium border-t border-slate-800/50 pt-2">
+      <button id="tab-codes" onclick="switchTab('codes')" class="pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition">Event Codes</button>
+      <button id="tab-rosters" onclick="switchTab('rosters')" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition">Parsed Rosters</button>
+    </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow relative w-full z-10 space-y-6">
-    
-    <!-- Top Stats Bar -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
-        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Total Collected Codes</p>
-        <p id="stat-total" class="text-2xl font-extrabold text-blue-400 mt-1">0</p>
-      </div>
-      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
-        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Unknown Codes (Pending)</p>
-        <p id="stat-unknown" class="text-2xl font-extrabold text-amber-400 mt-1">0</p>
-      </div>
-      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
-        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Total Occurrences</p>
-        <p id="stat-occurrences" class="text-2xl font-extrabold text-emerald-400 mt-1">0</p>
-      </div>
-    </div>
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
 
-    <!-- Controls & Filters -->
-    <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center space-x-3 w-full sm:w-auto">
-        <input type="text" id="search-input" placeholder="Search code or title..." 
-          class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full sm:w-64">
-        
-        <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500">
-          <option value="UNKNOWN" selected>Unknown Only</option>
-          <option value="ALL">All Codes</option>
-          <option value="KNOWN">Known Only</option>
-        </select>
+    <!-- VIEW 1: CODES COLLECTION -->
+    <div id="view-codes" class="block space-y-6 animate-fade-in">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 shadow">
+          <p class="text-[10px] text-slate-400 uppercase font-bold">Total Collected</p>
+          <p id="stat-total" class="text-2xl font-extrabold text-blue-400 mt-1">0</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 shadow">
+          <p class="text-[10px] text-slate-400 uppercase font-bold">Unknown (Pending)</p>
+          <p id="stat-unknown" class="text-2xl font-extrabold text-amber-400 mt-1">0</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 shadow">
+          <p class="text-[10px] text-slate-400 uppercase font-bold">Total Occurrences</p>
+          <p id="stat-occurrences" class="text-2xl font-extrabold text-emerald-400 mt-1">0</p>
+        </div>
       </div>
 
-      <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-        <button id="btn-refresh" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 transition">
-          ↻ Refresh
-        </button>
-        <button id="btn-export-json" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">
-          📋 Copy Pending as JSON
-        </button>
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row justify-between gap-3">
+        <div class="flex space-x-3">
+          <input type="text" id="search-input" placeholder="Search code..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500">
+          <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <option value="UNKNOWN" selected>Unknown Only</option>
+            <option value="ALL">All Codes</option>
+            <option value="KNOWN">Known Only</option>
+          </select>
+        </div>
+        <button id="btn-refresh-codes" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700">↻ Refresh</button>
       </div>
-    </div>
 
-    <!-- Codes Table -->
-    <div class="apple-glass rounded-2xl border border-slate-700/60 overflow-hidden shadow-xl">
-      <div class="overflow-x-auto">
+      <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden shadow">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="border-b border-slate-700/80 bg-slate-900/80 text-slate-400 text-[10px] uppercase tracking-tight">
+            <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase">
               <th class="py-3 px-4">Code</th>
               <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4">Sample Title / Context</th>
               <th class="py-3 px-4 text-center">Occurrences</th>
-              <th class="py-3 px-4">Last Seen</th>
               <th class="py-3 px-4 text-right">Action</th>
             </tr>
           </thead>
-          <tbody id="codes-table-body" class="divide-y divide-slate-800/60 font-mono">
-            <tr>
-              <td colspan="6" class="py-8 text-center text-slate-500 font-sans">Loading collected codes...</td>
-            </tr>
+          <tbody id="codes-table-body" class="divide-y divide-slate-800">
+            <tr><td colspan="4" class="py-6 text-center text-slate-500">Loading codes...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- VIEW 2: PARSED ROSTERS -->
+    <div id="view-rosters" class="hidden space-y-6 animate-fade-in">
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
+        <div>
+          <h2 class="text-sm font-bold text-slate-200">Rosters by Staff Number</h2>
+          <p class="text-[10px] text-slate-400">Grouped by upload session chronologically.</p>
+        </div>
+        <button id="btn-refresh-rosters" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700">↻ Fetch Rosters</button>
+      </div>
+
+      <div id="rosters-container" class="space-y-4">
+        <!-- Rendered Rosters will go here -->
+        <div class="py-12 text-center text-slate-500 text-xs">Click 'Fetch Rosters' to load data from Supabase.</div>
       </div>
     </div>
 
   </main>
 
   <script>
-    // Configuration from app.js
-    const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
+    // --- SUPABASE CONFIG ---
+    const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co"; 
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; 
 
+    // --- TAB SWITCHING ---
+    function switchTab(tab) {
+      document.getElementById('view-codes').classList.toggle('hidden', tab !== 'codes');
+      document.getElementById('view-codes').classList.toggle('block', tab === 'codes');
+      document.getElementById('view-rosters').classList.toggle('hidden', tab !== 'rosters');
+      document.getElementById('view-rosters').classList.toggle('block', tab === 'rosters');
+      
+      const activeClass = "pb-2 border-b-2 border-blue-500 text-blue-400 cursor-pointer transition";
+      const inactiveClass = "pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 cursor-pointer transition";
+      
+      document.getElementById('tab-codes').className = tab === 'codes' ? activeClass : inactiveClass;
+      document.getElementById('tab-rosters').className = tab === 'rosters' ? activeClass : inactiveClass;
+    }
+
+    // --- VIEW 1: CODES LOGIC ---
     let allCodes = [];
-
     async function fetchCodes() {
-      const tableBody = document.getElementById('codes-table-body');
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?select=*&order=occurrence_count.desc`, {
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          }
+          headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
         });
-        
         allCodes = await res.json();
-        updateStats();
-        renderTable();
+        updateCodeStats();
+        renderCodesTable();
       } catch (err) {
-        console.error("Failed to load codes:", err);
-        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-400 font-sans">Failed to connect to Supabase. Check credentials.</td></tr>`;
+        console.error(err);
       }
     }
 
-    function updateStats() {
-      const total = allCodes.length;
-      const unknown = allCodes.filter(c => !c.is_known).length;
-      const occurrences = allCodes.reduce((sum, c) => sum + (c.occurrence_count || 1), 0);
-
-      document.getElementById('stat-total').innerText = total;
-      document.getElementById('stat-unknown').innerText = unknown;
-      document.getElementById('stat-occurrences').innerText = occurrences;
+    function updateCodeStats() {
+      document.getElementById('stat-total').innerText = allCodes.length;
+      document.getElementById('stat-unknown').innerText = allCodes.filter(c => !c.is_known).length;
+      document.getElementById('stat-occurrences').innerText = allCodes.reduce((sum, c) => sum + (c.occurrence_count || 1), 0);
     }
 
-    function renderTable() {
-      const tableBody = document.getElementById('codes-table-body');
+    function renderCodesTable() {
       const search = document.getElementById('search-input').value.toUpperCase();
       const filter = document.getElementById('filter-status').value;
-
       const filtered = allCodes.filter(item => {
-        const matchesSearch = item.code.toUpperCase().includes(search) || (item.raw_title && item.raw_title.toUpperCase().includes(search));
+        const matchesSearch = item.code.toUpperCase().includes(search);
         const matchesStatus = filter === 'ALL' || (filter === 'UNKNOWN' && !item.is_known) || (filter === 'KNOWN' && item.is_known);
         return matchesSearch && matchesStatus;
       });
 
-      if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500 font-sans">No matching codes found.</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = filtered.map(item => `
-        <tr class="hover:bg-slate-800/40 transition">
+      document.getElementById('codes-table-body').innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-800/40">
           <td class="py-3 px-4 font-bold text-blue-300">${item.code}</td>
           <td class="py-3 px-4">
-            <span class="px-2 py-0.5 rounded text-[10px] font-sans font-semibold ${item.is_known ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.is_known ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'}">
               ${item.is_known ? 'Known' : 'Unknown'}
             </span>
           </td>
-          <td class="py-3 px-4 text-slate-300 font-sans max-w-xs truncate" title="${item.raw_title || ''}">${item.raw_title || '-'}</td>
-          <td class="py-3 px-4 text-center text-slate-200 font-bold">${item.occurrence_count || 1}</td>
-          <td class="py-3 px-4 text-slate-400 text-[11px] font-sans">${new Date(item.last_seen).toLocaleDateString()}</td>
+          <td class="py-3 px-4 text-center font-bold">${item.occurrence_count || 1}</td>
           <td class="py-3 px-4 text-right">
-            <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] font-sans px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+            <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
               ${item.is_known ? 'Mark Unknown' : 'Mark Known'}
             </button>
           </td>
@@ -161,46 +164,95 @@
       `).join('');
     }
 
-    async function toggleKnown(code, targetState) {
+    async function toggleKnown(code, state) {
+      await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?code=eq.${code}`, {
+        method: 'PATCH',
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
+        body: JSON.stringify({ is_known: state })
+      });
+      fetchCodes();
+    }
+
+    document.getElementById('btn-refresh-codes').addEventListener('click', fetchCodes);
+    document.getElementById('search-input').addEventListener('input', renderCodesTable);
+    document.getElementById('filter-status').addEventListener('change', renderCodesTable);
+
+    // --- VIEW 2: ROSTERS LOGIC ---
+    async function fetchRosters() {
+      const container = document.getElementById('rosters-container');
+      container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">Loading rosters...</div>`;
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?code=eq.${code}`, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ is_known: targetState })
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/roster_events?select=*&order=created_at.desc`, {
+          headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
         });
+        const rawEvents = await res.json();
         
-        const item = allCodes.find(c => c.code === code);
-        if (item) item.is_known = targetState;
-        updateStats();
-        renderTable();
+        // Group by staff_number -> sync_session_id
+        const grouped = {};
+        rawEvents.forEach(evt => {
+          const staff = evt.staff_number || "UNKNOWN";
+          const session = evt.sync_session_id;
+          if (!grouped[staff]) grouped[staff] = {};
+          if (!grouped[staff][session]) grouped[staff][session] = { timestamp: evt.created_at, events: [] };
+          grouped[staff][session].events.push(evt);
+        });
+
+        renderRosters(grouped);
       } catch (err) {
-        alert("Failed to update status.");
+        console.error(err);
+        container.innerHTML = `<div class="text-center text-red-500 text-xs py-8">Error loading rosters.</div>`;
       }
     }
 
-    document.getElementById('btn-export-json').addEventListener('click', () => {
-      const unknownCodes = allCodes.filter(c => !c.is_known);
-      const jsonStructure = {};
+    function renderRosters(groupedData) {
+      const container = document.getElementById('rosters-container');
+      container.innerHTML = "";
 
-      unknownCodes.forEach(c => {
-        jsonStructure[c.code] = {
-          title: c.raw_title || "Custom Duty",
-          emoji: "📌",
-          category: "general"
-        };
+      if (Object.keys(groupedData).length === 0) {
+        container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
+        return;
+      }
+
+      Object.keys(groupedData).forEach(staffId => {
+        const staffSessions = groupedData[staffId];
+        
+        // Sort sessions chronologically (newest first)
+        const sortedSessions = Object.keys(staffSessions).sort((a, b) => 
+          new Date(staffSessions[b].timestamp) - new Date(staffSessions[a].timestamp)
+        );
+
+        let sessionHtml = sortedSessions.map((session, index) => {
+          const sData = staffSessions[session];
+          const dateStr = new Date(sData.timestamp).toLocaleString();
+          return `
+            <div class="mt-2 pl-4 border-l-2 border-slate-700">
+              <div class="flex justify-between items-center text-xs mb-2">
+                <span class="text-slate-400 font-mono">Upload #${sortedSessions.length - index} — ${dateStr}</span>
+                <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">${sData.events.length} events</span>
+              </div>
+              <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-400">
+                ${sData.events.map(e => `[${e.event_code || '??'}] ${e.category || '-'} | ${e.origin || '-'}-${e.destination || '-'} | ${e.start_utc ? e.start_utc.slice(0,10) : ''}`).join('<br>')}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const staffCard = document.createElement('div');
+        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 p-4 mb-4";
+        staffCard.innerHTML = `
+          <h3 class="font-bold text-blue-400 text-lg flex items-center space-x-2">
+            <span>👤 Staff: ${staffId}</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${sortedSessions.length} Uploads</span>
+          </h3>
+          <div class="mt-3 space-y-4">
+            ${sessionHtml}
+          </div>
+        `;
+        container.appendChild(staffCard);
       });
+    }
 
-      navigator.clipboard.writeText(JSON.stringify(jsonStructure, null, 2));
-      alert(`Copied ${unknownCodes.length} unknown codes as JSON to clipboard!`);
-    });
-
-    document.getElementById('search-input').addEventListener('input', renderTable);
-    document.getElementById('filter-status').addEventListener('change', renderTable);
-    document.getElementById('btn-refresh').addEventListener('click', fetchCodes);
+    document.getElementById('btn-refresh-rosters').addEventListener('click', fetchRosters);
 
     // Initial load
     fetchCodes();
