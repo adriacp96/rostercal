@@ -22,6 +22,9 @@
   <header class="apple-glass z-50 sticky top-0 border-b border-slate-800 backdrop-blur-md bg-slate-950/80">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 flex items-center justify-center">
+          <img src="calendar.png" alt="RosterCal Logo" class="w-8 h-8 object-contain">
+        </div>
         <h1 class="text-xl font-extrabold text-white tracking-tight">RosterCal Admin</h1>
       </div>
       <a href="index.html" class="text-xs text-slate-400 hover:text-white transition font-medium">← Back to App</a>
@@ -108,13 +111,13 @@
       <!-- Rosters Search & Filter Bar -->
       <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 flex flex-col lg:flex-row justify-between gap-3 mb-2">
         <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full lg:w-auto">
-          <input type="text" id="search-rosters" placeholder="Staff Number..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-48">
+          <input type="text" id="search-rosters" placeholder="Search Staff No..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-blue-500 w-full sm:w-48">
           <select id="filter-rosters-month" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full sm:w-auto">
             <option value="ALL" selected>All Months</option>
           </select>
           <select id="sort-rosters" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full sm:w-auto">
-            <option value="NEWEST" selected>Sort: Newest</option>
-            <option value="OLDEST">Sort: Oldest</option>
+            <option value="NEWEST" selected>Sort: Newest Uploads</option>
+            <option value="OLDEST">Sort: Oldest Uploads</option>
           </select>
         </div>
         <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto justify-end">
@@ -123,8 +126,9 @@
         </div>
       </div>
 
-      <div id="rosters-container" class="space-y-4">
-        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+      <!-- Compact Grid Container for Staff Profiles -->
+      <div id="rosters-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 items-start">
+        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -168,6 +172,24 @@
         }
     };
 
+    // Toggle Staff Card Size in Grid
+    window.toggleStaffAccordion = function(contentId, cardId) {
+        const content = document.getElementById(contentId);
+        const card = document.getElementById(cardId);
+        
+        if (content.classList.contains('hidden')) {
+            // Expand to full row
+            content.classList.remove('hidden');
+            card.classList.remove('col-span-1');
+            card.classList.add('col-span-full', 'ring-1', 'ring-blue-500', 'bg-slate-900/80');
+        } else {
+            // Collapse to grid block
+            content.classList.add('hidden');
+            card.classList.remove('col-span-full', 'ring-1', 'ring-blue-500', 'bg-slate-900/80');
+            card.classList.add('col-span-1');
+        }
+    };
+
     // --- DELETION LOGIC (ROSTERS) ---
     async function executeDelete(query, confirmMsg) {
       if (!confirm(confirmMsg)) return;
@@ -185,9 +207,7 @@
           const errData = await res.json();
           throw new Error(errData.message || "Failed to delete data.");
         }
-        
-        // Refresh the UI
-        await fetchRosters();
+        await fetchRosters(); // Refresh UI
       } catch (err) {
         console.error("Delete Error:", err);
         alert("Deletion failed: " + err.message);
@@ -195,7 +215,7 @@
     }
 
     window.deleteStaff = function(staffId, event) {
-      event.stopPropagation(); // Prevents accordion from toggling
+      event.stopPropagation();
       executeDelete(`staff_number=eq.${staffId}`, `⚠️ Are you sure you want to permanently delete ALL rosters for Staff ${staffId}?`);
     };
 
@@ -208,7 +228,6 @@
       event.stopPropagation();
       executeDelete(`sync_session_id=eq.${sessionId}`, `⚠️ Delete imported ${vLabel}?`);
     };
-
 
     // --- VIEW 1: CODES LOGIC ---
     let allCodes = [];
@@ -322,7 +341,7 @@
     async function fetchRosters() {
       const container = document.getElementById('rosters-container');
       container.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span class="text-xs text-slate-400 font-medium">Loading rosters...</span>
         </div>`;
@@ -343,7 +362,7 @@
       } catch (err) {
         console.error("Fetch Rosters Error:", err);
         container.innerHTML = `
-          <div class="text-center py-8">
+          <div class="col-span-full text-center py-8">
             <p class="text-red-500 text-sm font-bold">Error loading rosters!</p>
             <p class="text-slate-400 text-xs mt-2 font-mono">${err.message}</p>
           </div>`;
@@ -357,7 +376,7 @@
       
       const container = document.getElementById('rosters-container');
       container.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span class="text-xs text-slate-400 font-medium">Deleting all roster data...</span>
         </div>`;
@@ -420,7 +439,7 @@
       container.innerHTML = "";
 
       if (allRosterEvents.length === 0) {
-        container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
+        container.innerHTML = `<div class="col-span-full text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
         return;
       }
 
@@ -474,7 +493,7 @@
       const staffIds = Object.keys(grouped);
       
       if (staffIds.length === 0) {
-         container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No rosters match your search/filters.</div>`;
+         container.innerHTML = `<div class="col-span-full text-center text-slate-500 text-xs py-8">No rosters match your search/filters.</div>`;
          return;
       }
 
@@ -554,22 +573,27 @@
 
         const totalUploads = Object.keys(staffSessions).length;
         const staffContainerId = `staff-${staffId}`;
+        const cardId = `card-${staffId}`;
         
         const staffCard = document.createElement('div');
-        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow mb-4";
+        staffCard.id = cardId;
+        staffCard.className = "col-span-1 bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow transition-all duration-300 flex flex-col";
         staffCard.innerHTML = `
-          <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition no-select">
-            <h3 class="font-bold text-blue-400 text-base sm:text-lg flex items-center space-x-2">
-                <span>👤 Staff: ${staffId}</span>
-                <span class="text-[10px] sm:text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
-            </h3>
-            <div class="flex items-center space-x-2">
-                <button onclick="deleteStaff('${staffId}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 p-1 rounded transition" title="Delete ALL rosters for this staff">🗑️</button>
-                <span id="icon-${staffContainerId}" class="text-slate-500 text-sm ml-1">▶</span>
+          <button onclick="toggleStaffAccordion('${staffContainerId}', '${cardId}')" class="w-full relative p-5 hover:bg-slate-800/50 transition no-select flex flex-col items-center justify-center text-center h-full">
+            <div class="absolute top-2 right-2">
+                <button onclick="deleteStaff('${staffId}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 p-1.5 rounded transition" title="Delete ALL rosters for this staff">🗑️</button>
             </div>
+            <div class="bg-blue-900/30 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 shadow-inner ring-1 ring-blue-500/20">
+                👤
+            </div>
+            <h3 class="font-bold text-white text-lg tracking-tight">${staffId}</h3>
+            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-semibold mt-2 shadow-sm">${totalUploads} Upload(s)</span>
           </button>
-          <div id="${staffContainerId}" class="hidden p-4 pt-0 border-t border-slate-800">
-            ${monthHtml}
+          <div id="${staffContainerId}" class="hidden p-4 pt-0 border-t border-slate-800 bg-slate-900/30 text-left w-full">
+            <div class="pt-2">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-tight mb-2">Roster History</h4>
+              ${monthHtml}
+            </div>
           </div>
         `;
         container.appendChild(staffCard);
