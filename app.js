@@ -5,6 +5,13 @@
  * UI Enhanced with Apple Design Principles
  */
 
+// --- Supabase Configuration ---
+const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
+
+const HOME_BASE = "DXB";
+const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
+
 const HOME_BASE = "DXB";
 const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
 
