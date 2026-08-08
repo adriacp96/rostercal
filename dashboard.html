@@ -11,6 +11,9 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+    
+    /* Prevent text selection when clicking accordions fast */
+    .no-select { user-select: none; -webkit-user-select: none; }
   </style>
 </head>
 <body class="text-slate-100 min-h-screen bg-slate-950 font-sans flex flex-col selection:bg-blue-500 selection:text-white relative">
@@ -149,6 +152,48 @@
             icon.innerText = '▶';
         }
     };
+
+    // --- DELETION LOGIC (ROSTERS) ---
+    async function executeDelete(query, confirmMsg) {
+      if (!confirm(confirmMsg)) return;
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/roster_events?${query}`, {
+          method: 'DELETE',
+          headers: { 
+            "apikey": SUPABASE_ANON_KEY, 
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal"
+          }
+        });
+        
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || "Failed to delete data.");
+        }
+        
+        // Refresh the UI
+        await fetchRosters();
+      } catch (err) {
+        console.error("Delete Error:", err);
+        alert("Deletion failed: " + err.message);
+      }
+    }
+
+    window.deleteStaff = function(staffId, event) {
+      event.stopPropagation(); // Prevents accordion from toggling
+      executeDelete(`staff_number=eq.${staffId}`, `⚠️ Are you sure you want to permanently delete ALL rosters for Staff ${staffId}?`);
+    };
+
+    window.deleteMonth = function(staffId, monthLabel, sessionIdsStr, event) {
+      event.stopPropagation();
+      executeDelete(`sync_session_id=in.(${sessionIdsStr})`, `⚠️ Delete all ${monthLabel} rosters for Staff ${staffId}?`);
+    };
+
+    window.deleteVersion = function(sessionId, vLabel, event) {
+      event.stopPropagation();
+      executeDelete(`sync_session_id=eq.${sessionId}`, `⚠️ Delete imported ${vLabel}?`);
+    };
+
 
     // --- VIEW 1: CODES LOGIC ---
     let allCodes = [];
@@ -430,6 +475,7 @@
             
             // Sort versions within the month by import timestamp (Newest first)
             const sortedVersions = monthData.sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const sessionIdsArray = sortedVersions.map(v => v.id).join(','); // Used for month-level deletion
             
             const monthId = `month-${staffId}-${mKey}`;
             
@@ -441,7 +487,10 @@
                 <div class="mt-3 pl-2 sm:pl-4 border-l-2 border-slate-700">
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-2 space-y-1 sm:space-y-0">
                     <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1 hidden sm:inline">— Imp: ${dateStr}</span></span>
-                    <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium self-start sm:self-auto">${vData.events.length} events</span>
+                    <div class="flex items-center space-x-2 self-start sm:self-auto">
+                        <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium">${vData.events.length} events</span>
+                        <button onclick="deleteVersion('${vData.id}', 'v${versionNum}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1.5 py-0.5 rounded transition" title="Delete this version">🗑️</button>
+                    </div>
                   </div>
                   <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto overflow-x-auto whitespace-nowrap font-mono text-[10px] text-slate-400">
                     ${vData.events.map(e => `[${e.event_code || '??'}] ${e.category || '-'} | ${e.origin || '-'}-${e.destination || '-'} | ${e.start_utc ? e.start_utc.slice(0,10) : ''}`).join('<br>')}
@@ -455,11 +504,12 @@
             
             return `
             <div class="mt-3 bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden">
-                <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition">
+                <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition no-select">
                     <span class="font-bold text-slate-200 text-sm">📅 ${monthData.label}</span>
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
                         <span class="text-[10px] sm:text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
-                        <span id="icon-${monthId}" class="text-slate-500 text-xs">${isFirstMonth ? '▼' : '▶'}</span>
+                        <button onclick="deleteMonth('${staffId}', '${monthData.label}', '${sessionIdsArray}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1.5 py-0.5 rounded transition" title="Delete this entire month">🗑️</button>
+                        <span id="icon-${monthId}" class="text-slate-500 text-xs ml-1">${isFirstMonth ? '▼' : '▶'}</span>
                     </div>
                 </button>
                 <div id="${monthId}" class="${isFirstMonth ? 'block' : 'hidden'} p-3 pt-0 border-t border-slate-800">
@@ -475,12 +525,15 @@
         const staffCard = document.createElement('div');
         staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow mb-4";
         staffCard.innerHTML = `
-          <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition">
+          <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition no-select">
             <h3 class="font-bold text-blue-400 text-base sm:text-lg flex items-center space-x-2">
                 <span>👤 Staff: ${staffId}</span>
                 <span class="text-[10px] sm:text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
             </h3>
-            <span id="icon-${staffContainerId}" class="text-slate-500 text-sm">▶</span>
+            <div class="flex items-center space-x-2">
+                <button onclick="deleteStaff('${staffId}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 p-1 rounded transition" title="Delete ALL rosters for this staff">🗑️</button>
+                <span id="icon-${staffContainerId}" class="text-slate-500 text-sm ml-1">▶</span>
+            </div>
           </button>
           <div id="${staffContainerId}" class="hidden p-4 pt-0 border-t border-slate-800">
             ${monthHtml}
