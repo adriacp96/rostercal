@@ -22,8 +22,13 @@
         <h1 class="text-xl font-extrabold animated-blue-text bg-clip-text text-transparent">RosterCal</h1>
       </div>
       
-      <div class="flex items-center space-x-2 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] text-emerald-300 font-medium shadow-md shadow-emerald-950/50 animated-emerald-badge hidden sm:flex">
-        <span>🔒 100% Client-Side Private</span>
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] text-emerald-300 font-medium shadow-md shadow-emerald-950/50 animated-emerald-badge hidden sm:flex">
+          <span>🔒 100% Client-Side Private</span>
+        </div>
+        <button id="btn-admin-login" class="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-sm flex items-center space-x-1.5">
+          <span>⚙️</span><span>Admin Portal</span>
+        </button>
       </div>
     </div>
   </header>
@@ -274,6 +279,29 @@
 
   </main>
 
+  <!-- Admin Login Modal -->
+  <div id="admin-login-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
+    <div class="apple-glass border border-slate-700/80 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-left space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+        <h3 class="text-sm font-extrabold text-white tracking-tight flex items-center space-x-2">
+          <span>🔒</span><span>Admin Portal Authentication</span>
+        </h3>
+        <button id="btn-close-admin-modal" class="text-slate-400 hover:text-white font-bold p-1 cursor-pointer">✕</button>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Enter Admin Passcode</label>
+        <input type="password" id="admin-passcode-input" placeholder="••••••••" 
+          class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+        <p id="admin-login-error" class="text-[10px] text-red-400 mt-1.5 hidden">Incorrect passcode. Try again.</p>
+      </div>
+      <div class="pt-2 flex justify-end space-x-2">
+        <button id="btn-submit-admin-login" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow cursor-pointer transition">
+          Access Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Instructions Modal -->
   <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <div class="apple-glass border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
@@ -419,5 +447,44 @@
   </footer>
 
   <script src="app.js"></script>
+  <script>
+    // --- ADMIN LOGIN LOGIC ---
+    const adminModal = document.getElementById('admin-login-modal');
+    const btnAdminLogin = document.getElementById('btn-admin-login');
+    const btnCloseAdmin = document.getElementById('btn-close-admin-modal');
+    const btnSubmitAdmin = document.getElementById('btn-submit-admin-login');
+    const adminInput = document.getElementById('admin-passcode-input');
+    const adminError = document.getElementById('admin-login-error');
+
+    // Change this passcode as needed
+    const ADMIN_PASSCODE = "admin123";
+
+    btnAdminLogin.addEventListener('click', () => {
+      adminInput.value = "";
+      adminError.classList.add('hidden');
+      adminModal.classList.remove('hidden');
+      adminModal.classList.add('flex');
+      adminInput.focus();
+    });
+
+    btnCloseAdmin.addEventListener('click', () => {
+      adminModal.classList.remove('flex');
+      adminModal.classList.add('hidden');
+    });
+
+    function verifyAdmin() {
+      if (adminInput.value === ADMIN_PASSCODE) {
+        window.location.href = "dashboard.html";
+      } else {
+        adminError.classList.remove('hidden');
+        adminInput.focus();
+      }
+    }
+
+    btnSubmitAdmin.addEventListener('click', verifyAdmin);
+    adminInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') verifyAdmin();
+    });
+  </script>
 </body>
 </html>
