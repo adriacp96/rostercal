@@ -6,8 +6,8 @@
  */
 
 // --- Supabase Configuration ---
-const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
+const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co"; 
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; 
 
 const HOME_BASE = "DXB";
 const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
@@ -725,17 +725,15 @@ class ParserEngine {
     // Scan the first 500 characters of the roster (the header)
     const headerText = rawText.substring(0, 500);
     
-    // 1. Try to find a specifically labeled number (e.g., "Staff No: 123456" or "Emp: 12345")
-    let staffMatch = headerText.match(/(?:staff|emp|id|no)[^\d]*(\d{5,6})/i);
+    // 1. Try to find a specifically labeled number (e.g., "Staff No: 123456" or "Emp: 123456")
+    let staffMatch = headerText.match(/(?:staff|emp|id|no)[^\d]*(\d{6})/i);
     
-    // 2. If no label is found, grab the very first standalone 5 or 6 digit number
+    // 2. If no label is found, grab the very first standalone 6 digit number
     if (!staffMatch) {
-      staffMatch = headerText.match(/\b(\d{5,6})\b/);
+      staffMatch = headerText.match(/\b(\d{6})\b/);
     }
     
     state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
-    
-    let currentYear = new Date().getFullYear();
     
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
