@@ -85,7 +85,17 @@
               </tr>
             </thead>
             <tbody id="codes-table-body" class="divide-y divide-slate-800">
-              <tr><td colspan="5" class="py-6 text-center text-slate-500">Loading codes...</td></tr>
+              <tr>
+                <td colspan="5" class="py-12 text-center">
+                  <div class="flex flex-col items-center justify-center space-y-2 opacity-60">
+                    <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-xs text-slate-400 font-medium">Loading codes...</span>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -114,8 +124,13 @@
       </div>
 
       <div id="rosters-container" class="space-y-4">
-        <!-- Rendered Rosters will go here -->
-        <div class="py-12 text-center text-slate-500 text-xs">Click 'Fetch Rosters' to load data from Supabase.</div>
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+          <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-xs text-slate-400 font-medium">Loading rosters...</span>
+        </div>
       </div>
     </div>
 
@@ -198,6 +213,17 @@
     // --- VIEW 1: CODES LOGIC ---
     let allCodes = [];
     async function fetchCodes() {
+      const tableBody = document.getElementById('codes-table-body');
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="py-12 text-center">
+            <div class="flex flex-col items-center justify-center space-y-2 opacity-60">
+              <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <span class="text-xs text-slate-400 font-medium">Loading codes...</span>
+            </div>
+          </td>
+        </tr>`;
+      
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?select=*&order=occurrence_count.desc`, {
           headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
@@ -207,6 +233,7 @@
         renderCodesTable();
       } catch (err) {
         console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-red-500 font-semibold">Failed to fetch event codes.</td></tr>`;
       }
     }
 
@@ -294,7 +321,12 @@
 
     async function fetchRosters() {
       const container = document.getElementById('rosters-container');
-      container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">Loading rosters...</div>`;
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+          <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-slate-400 font-medium">Loading rosters...</span>
+        </div>`;
+        
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/roster_events?select=*&order=created_at.desc`, {
           headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
@@ -324,7 +356,11 @@
       }
       
       const container = document.getElementById('rosters-container');
-      container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">Deleting all roster data...</div>`;
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+          <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-slate-400 font-medium">Deleting all roster data...</span>
+        </div>`;
       
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/roster_events?id=not.is.null`, {
@@ -552,6 +588,7 @@
 
     // Initial load
     fetchCodes();
+    fetchRosters();
   </script>
 </body>
 </html>
