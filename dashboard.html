@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RosterCal — Code Collection Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white relative">
+
+  <!-- Header -->
+  <header class="apple-glass z-50 relative border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 flex items-center justify-center">
+          <img src="calendar.png" alt="RosterCal Logo" class="w-8 h-8 object-contain">
+        </div>
+        <h1 class="text-xl font-extrabold animated-blue-text bg-clip-text text-transparent">RosterCal Admin</h1>
+      </div>
+      <a href="index.html" class="text-xs text-slate-400 hover:text-white transition font-medium">← Back to App</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow relative w-full z-10 space-y-6">
+    
+    <!-- Top Stats Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
+        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Total Collected Codes</p>
+        <p id="stat-total" class="text-2xl font-extrabold text-blue-400 mt-1">0</p>
+      </div>
+      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
+        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Unknown Codes (Pending)</p>
+        <p id="stat-unknown" class="text-2xl font-extrabold text-amber-400 mt-1">0</p>
+      </div>
+      <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 shadow-lg">
+        <p class="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Total Occurrences</p>
+        <p id="stat-occurrences" class="text-2xl font-extrabold text-emerald-400 mt-1">0</p>
+      </div>
+    </div>
+
+    <!-- Controls & Filters -->
+    <div class="apple-glass rounded-2xl p-4 border border-slate-700/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <input type="text" id="search-input" placeholder="Search code or title..." 
+          class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full sm:w-64">
+        
+        <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500">
+          <option value="UNKNOWN" selected>Unknown Only</option>
+          <option value="ALL">All Codes</option>
+          <option value="KNOWN">Known Only</option>
+        </select>
+      </div>
+
+      <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+        <button id="btn-refresh" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 transition">
+          ↻ Refresh
+        </button>
+        <button id="btn-export-json" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl shadow transition">
+          📋 Copy Pending as JSON
+        </button>
+      </div>
+    </div>
+
+    <!-- Codes Table -->
+    <div class="apple-glass rounded-2xl border border-slate-700/60 overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-700/80 bg-slate-900/80 text-slate-400 text-[10px] uppercase tracking-tight">
+              <th class="py-3 px-4">Code</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Sample Title / Context</th>
+              <th class="py-3 px-4 text-center">Occurrences</th>
+              <th class="py-3 px-4">Last Seen</th>
+              <th class="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="codes-table-body" class="divide-y divide-slate-800/60 font-mono">
+            <tr>
+              <td colspan="6" class="py-8 text-center text-slate-500 font-sans">Loading collected codes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Configuration from app.js
+    const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co"; 
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; 
+
+    let allCodes = [];
+
+    async function fetchCodes() {
+      const tableBody = document.getElementById('codes-table-body');
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?select=*&order=occurrence_count.desc`, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        
+        allCodes = await res.json();
+        updateStats();
+        renderTable();
+      } catch (err) {
+        console.error("Failed to load codes:", err);
+        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-400 font-sans">Failed to connect to Supabase. Check credentials.</td></tr>`;
+      }
+    }
+
+    function updateStats() {
+      const total = allCodes.length;
+      const unknown = allCodes.filter(c => !c.is_known).length;
+      const occurrences = allCodes.reduce((sum, c) => sum + (c.occurrence_count || 1), 0);
+
+      document.getElementById('stat-total').innerText = total;
+      document.getElementById('stat-unknown').innerText = unknown;
+      document.getElementById('stat-occurrences').innerText = occurrences;
+    }
+
+    function renderTable() {
+      const tableBody = document.getElementById('codes-table-body');
+      const search = document.getElementById('search-input').value.toUpperCase();
+      const filter = document.getElementById('filter-status').value;
+
+      const filtered = allCodes.filter(item => {
+        const matchesSearch = item.code.toUpperCase().includes(search) || (item.raw_title && item.raw_title.toUpperCase().includes(search));
+        const matchesStatus = filter === 'ALL' || (filter === 'UNKNOWN' && !item.is_known) || (filter === 'KNOWN' && item.is_known);
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500 font-sans">No matching codes found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="py-3 px-4 font-bold text-blue-300">${item.code}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-sans font-semibold ${item.is_known ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">
+              ${item.is_known ? 'Known' : 'Unknown'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-slate-300 font-sans max-w-xs truncate" title="${item.raw_title || ''}">${item.raw_title || '-'}</td>
+          <td class="py-3 px-4 text-center text-slate-200 font-bold">${item.occurrence_count || 1}</td>
+          <td class="py-3 px-4 text-slate-400 text-[11px] font-sans">${new Date(item.last_seen).toLocaleDateString()}</td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="toggleKnown('${item.code}', ${!item.is_known})" class="text-[10px] font-sans px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              ${item.is_known ? 'Mark Unknown' : 'Mark Known'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function toggleKnown(code, targetState) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/collected_event_codes?code=eq.${code}`, {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ is_known: targetState })
+        });
+        
+        const item = allCodes.find(c => c.code === code);
+        if (item) item.is_known = targetState;
+        updateStats();
+        renderTable();
+      } catch (err) {
+        alert("Failed to update status.");
+      }
+    }
+
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      const unknownCodes = allCodes.filter(c => !c.is_known);
+      const jsonStructure = {};
+
+      unknownCodes.forEach(c => {
+        jsonStructure[c.code] = {
+          title: c.raw_title || "Custom Duty",
+          emoji: "📌",
+          category: "general"
+        };
+      });
+
+      navigator.clipboard.writeText(JSON.stringify(jsonStructure, null, 2));
+      alert(`Copied ${unknownCodes.length} unknown codes as JSON to clipboard!`);
+    });
+
+    document.getElementById('search-input').addEventListener('input', renderTable);
+    document.getElementById('filter-status').addEventListener('change', renderTable);
+    document.getElementById('btn-refresh').addEventListener('click', fetchCodes);
+
+    // Initial load
+    fetchCodes();
+  </script>
+</body>
+</html>
