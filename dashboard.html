@@ -132,9 +132,9 @@
         </div>
       </div>
 
-      <!-- Compact Grid Container for Staff Profiles -->
-      <div id="rosters-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 items-start">
-        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+      <!-- Vertical Stack Container for Staff Rows -->
+      <div id="rosters-container" class="space-y-3">
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -148,8 +148,8 @@
 
   <script>
     // --- SUPABASE CONFIG ---
-    const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g";
+    const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6InFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
 
     // --- TAB SWITCHING ---
     function switchTab(tab) {
@@ -175,24 +175,6 @@
         } else {
             el.classList.add('hidden');
             icon.innerText = '▶';
-        }
-    };
-
-    // Toggle Staff Card Size in Grid
-    window.toggleStaffAccordion = function(contentId, cardId) {
-        const content = document.getElementById(contentId);
-        const card = document.getElementById(cardId);
-        
-        if (content.classList.contains('hidden')) {
-            // Expand to full row
-            content.classList.remove('hidden');
-            card.classList.remove('col-span-1', 'sm:col-span-1', 'md:col-span-1', 'lg:col-span-1');
-            card.classList.add('col-span-full', 'ring-1', 'ring-blue-500/50', 'bg-slate-900/80', 'shadow-lg');
-        } else {
-            // Collapse to grid block
-            content.classList.add('hidden');
-            card.classList.remove('col-span-full', 'ring-1', 'ring-blue-500/50', 'bg-slate-900/80', 'shadow-lg');
-            card.classList.add('col-span-1');
         }
     };
 
@@ -347,7 +329,7 @@
     async function fetchRosters() {
       const container = document.getElementById('rosters-container');
       container.innerHTML = `
-        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span class="text-xs text-slate-400 font-medium">Loading rosters...</span>
         </div>`;
@@ -368,7 +350,7 @@
       } catch (err) {
         console.error("Fetch Rosters Error:", err);
         container.innerHTML = `
-          <div class="col-span-full text-center py-8">
+          <div class="text-center py-8">
             <p class="text-red-500 text-sm font-bold">Error loading rosters!</p>
             <p class="text-slate-400 text-xs mt-2 font-mono">${err.message}</p>
           </div>`;
@@ -382,7 +364,7 @@
       
       const container = document.getElementById('rosters-container');
       container.innerHTML = `
-        <div class="col-span-full flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
+        <div class="flex flex-col items-center justify-center py-12 space-y-2 opacity-60">
           <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span class="text-xs text-slate-400 font-medium">Deleting all roster data...</span>
         </div>`;
@@ -445,7 +427,7 @@
       container.innerHTML = "";
 
       if (allRosterEvents.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
+        container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No roster events found in database.</div>`;
         return;
       }
 
@@ -499,7 +481,7 @@
       const staffIds = Object.keys(grouped);
       
       if (staffIds.length === 0) {
-         container.innerHTML = `<div class="col-span-full text-center text-slate-500 text-xs py-8">No rosters match your search/filters.</div>`;
+         container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">No rosters match your search/filters.</div>`;
          return;
       }
 
@@ -572,15 +554,15 @@
                 }).join('');
 
                 return `
-                <div class="mt-2 bg-slate-900/40 rounded-lg border border-slate-800/60 overflow-hidden shadow-inner">
-                  <div class="flex justify-between items-center p-2 bg-slate-800/40 border-b border-slate-800/60">
-                    <span class="text-xs font-bold text-slate-300">v${versionNum} <span class="text-[9px] text-slate-500 font-normal ml-1">— Imp: ${dateStr}</span></span>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="text-[9px] bg-slate-950 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700/50">${vData.events.length} evt</span>
-                        <button onclick="deleteVersion('${vData.id}', 'v${versionNum}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1 py-0.5 rounded transition" title="Delete version">🗑️</button>
+                <div class="mt-3 pl-2 sm:pl-4 border-l-2 border-slate-700">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-2 space-y-1 sm:space-y-0">
+                    <span class="text-slate-400 font-mono font-semibold">Version v${versionNum} <span class="text-slate-500 font-normal ml-1 hidden sm:inline">— Imp: ${dateStr}</span></span>
+                    <div class="flex items-center space-x-2 self-start sm:self-auto">
+                        <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded font-medium">${vData.events.length} events</span>
+                        <button onclick="deleteVersion('${vData.id}', 'v${versionNum}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1.5 py-0.5 rounded transition" title="Delete this version">🗑️</button>
                     </div>
                   </div>
-                  <div class="p-1 max-h-48 overflow-y-auto custom-scrollbar">
+                  <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-40 overflow-y-auto overflow-x-auto whitespace-nowrap font-mono text-[10px] text-slate-400">
                     ${eventsHtml}
                   </div>
                 </div>
@@ -588,16 +570,16 @@
             }).join('');
 
             return `
-            <div class="mt-2 border-b border-slate-800/60 last:border-0 pb-2">
-                <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center py-2 text-left hover:bg-slate-800/30 rounded px-2 transition no-select group">
-                    <span class="font-bold text-slate-300 text-xs group-hover:text-blue-400 transition">📅 ${monthData.label}</span>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-[9px] bg-slate-800/80 text-slate-400 px-1.5 py-0.5 rounded-md">${sortedVersions.length} ver.</span>
-                        <button onclick="deleteMonth('${staffId}', '${monthData.label}', '${sessionIdsArray}', event)" class="text-slate-500 hover:text-red-400 px-1 py-0.5 rounded transition" title="Delete month">🗑️</button>
-                        <span id="icon-${monthId}" class="text-slate-500 text-[10px] w-3 text-center">▶</span>
+            <div class="mt-3 bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden">
+                <button onclick="toggleAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 text-left hover:bg-slate-800/50 transition no-select">
+                    <span class="font-bold text-slate-200 text-sm">📅 ${monthData.label}</span>
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <span class="text-[10px] sm:text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${sortedVersions.length} Version(s)</span>
+                        <button onclick="deleteMonth('${staffId}', '${monthData.label}', '${sessionIdsArray}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 px-1.5 py-0.5 rounded transition" title="Delete this entire month">🗑️</button>
+                        <span id="icon-${monthId}" class="text-slate-500 text-xs ml-1">▶</span>
                     </div>
                 </button>
-                <div id="${monthId}" class="hidden px-1">
+                <div id="${monthId}" class="hidden p-3 pt-0 border-t border-slate-800">
                     ${versionsHtml}
                 </div>
             </div>
@@ -606,26 +588,22 @@
 
         const totalUploads = Object.keys(staffSessions).length;
         const staffContainerId = `staff-${staffId}`;
-        const cardId = `card-${staffId}`;
         
         const staffCard = document.createElement('div');
-        staffCard.id = cardId;
-        staffCard.className = "col-span-1 bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-md transition-all duration-300 flex flex-col";
+        staffCard.className = "bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden shadow mb-3";
         staffCard.innerHTML = `
-          <button onclick="toggleStaffAccordion('${staffContainerId}', '${cardId}')" class="w-full relative p-4 hover:bg-slate-800/40 transition no-select flex flex-col items-center justify-center text-center min-h-[100px]">
-            <div class="absolute top-1.5 right-1.5">
-                <button onclick="deleteStaff('${staffId}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 p-1 rounded transition" title="Delete ALL rosters for Staff ${staffId}">🗑️</button>
+          <button onclick="toggleAccordion('${staffContainerId}')" class="w-full flex justify-between items-center p-4 text-left hover:bg-slate-800/50 transition no-select">
+            <h3 class="font-bold text-blue-400 text-base sm:text-lg flex items-center space-x-2">
+                <span>👤 Staff: ${staffId}</span>
+                <span class="text-[10px] sm:text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full font-semibold">${totalUploads} Upload(s)</span>
+            </h3>
+            <div class="flex items-center space-x-2">
+                <button onclick="deleteStaff('${staffId}', event)" class="text-slate-500 hover:text-red-400 hover:bg-red-900/20 p-1 rounded transition" title="Delete ALL rosters for this staff">🗑️</button>
+                <span id="icon-${staffContainerId}" class="text-slate-500 text-sm ml-1">▶</span>
             </div>
-            <div class="bg-gradient-to-b from-blue-900/40 to-slate-900/40 text-blue-400 w-10 h-10 rounded-full flex items-center justify-center text-xl mb-2 shadow-inner ring-1 ring-white/5">
-                👤
-            </div>
-            <h3 class="font-extrabold text-slate-200 text-sm tracking-tight">${staffId}</h3>
-            <span class="text-[9px] text-slate-400 font-medium mt-0.5">${totalUploads} Upload(s)</span>
           </button>
-          <div id="${staffContainerId}" class="hidden bg-slate-950/50 w-full border-t border-slate-800/60">
-            <div class="p-2 space-y-1">
-              ${monthHtml}
-            </div>
+          <div id="${staffContainerId}" class="hidden p-4 pt-0 border-t border-slate-800 bg-slate-950/30">
+            ${monthHtml}
           </div>
         `;
         container.appendChild(staffCard);
