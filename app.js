@@ -305,6 +305,50 @@ const BUILTIN_EVENT_CODES = {
   YSA:    { title: "Service Assessment", emoji: "📋", category: "general" }
 };
 
+// --- Global App State (Instant Memory Ready) ---
+class AppState {
+  constructor() {
+    this.airports = { ...BUILTIN_AIRPORTS };
+    this.eventCodes = { ...BUILTIN_EVENT_CODES };
+    this.parsedEvents = [];
+    this.timezoneMode = 'LOCAL';
+    this.activeView = 'list';
+    this.activeFilter = 'ALL';
+    this.currentYear = new Date().getFullYear();
+    this.currentMonth = new Date().getMonth();
+    this.currentStaffNumber = 'UNKNOWN';
+    this.preferences = {
+      calendarName: "Emirates Roster",
+      flightTitleFormat: "CITY_IATA",
+      dutyTitleFormat: "EMOJI_TITLE",
+      includeReport: "HOME_ONLY",
+      includeFR24: true,
+      autoLayovers: true,
+      includeLocal: true
+    };
+  }
+
+  async init() {
+    try {
+      const [airportsRes, codesRes] = await Promise.all([
+        fetch('airports.json').catch(() => null),
+        fetch('event_codes.json').catch(() => null)
+      ]);
+      if (airportsRes && airportsRes.ok) {
+        const data = await airportsRes.json().catch(() => null);
+        if (data) this.airports = data;
+      }
+      if (codesRes && codesRes.ok) {
+        const data = await codesRes.json().catch(() => null);
+        if (data) this.eventCodes = data;
+      }
+    } catch (err) {
+      console.log("ℹ️ Running in instant local memory mode.");
+    }
+  }
+}
+const state = new AppState();
+
 // --- Supabase Async Code Logger Engine ---
 class SupabaseLogger {
   static async logCodes(events) {
@@ -433,49 +477,6 @@ class Toast {
     }, 3500);
   }
 }
-
-// --- Global App State (Instant Memory Ready) ---
-class AppState {
-  constructor() {
-    this.airports = { ...BUILTIN_AIRPORTS };
-    this.eventCodes = { ...BUILTIN_EVENT_CODES };
-    this.parsedEvents = [];
-    this.timezoneMode = 'LOCAL';
-    this.activeView = 'list';
-    this.activeFilter = 'ALL';
-    this.currentYear = new Date().getFullYear();
-    this.currentMonth = new Date().getMonth();
-    this.preferences = {
-      calendarName: "Emirates Roster",
-      flightTitleFormat: "CITY_IATA",
-      dutyTitleFormat: "EMOJI_TITLE",
-      includeReport: "HOME_ONLY",
-      includeFR24: true,
-      autoLayovers: true,
-      includeLocal: true
-    };
-  }
-
-  async init() {
-    try {
-      const [airportsRes, codesRes] = await Promise.all([
-        fetch('airports.json').catch(() => null),
-        fetch('event_codes.json').catch(() => null)
-      ]);
-      if (airportsRes && airportsRes.ok) {
-        const data = await airportsRes.json().catch(() => null);
-        if (data) this.airports = data;
-      }
-      if (codesRes && codesRes.ok) {
-        const data = await codesRes.json().catch(() => null);
-        if (data) this.eventCodes = data;
-      }
-    } catch (err) {
-      console.log("ℹ️ Running in instant local memory mode.");
-    }
-  }
-}
-const state = new AppState();
 
 // --- Formatting Engine (Clean Typography Notes) ---
 class FormatEngine {
@@ -720,7 +721,7 @@ class ParserEngine {
 
   static parseRawText(rawText) {
     const events = [];
-
+    
     // Attempt to extract a 5 or 6-digit staff number from the text
     const staffMatch = rawText.match(/\b(3\d{4,5}|5\d{4,5})\b/); 
     state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
@@ -1028,7 +1029,7 @@ class ParserEngine {
 
     // Asynchronously log collected event codes and full roster data to Supabase
     SupabaseLogger.logCodes(events);
-    SupabaseLogger.logEvents(events); // <-- You are adding this single line here
+    SupabaseLogger.logEvents(events);
     
     return events;
   }
