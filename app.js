@@ -1329,56 +1329,47 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnClearBox = document.getElementById("btn-clear-box");
 
   // --- SPA MAGIC MODE CONTROLLER ---
-const urlParams = new URLSearchParams(window.location.search);
-const isMagicMode = urlParams.get('magic') === 'true';
+  const urlParams = new URLSearchParams(window.location.search);
+  const isMagicMode = urlParams.get('magic') === 'true';
 
-const standardUiView = document.getElementById('standard-ui-view');
-const magicModeView = document.getElementById('magic-mode-view');
-const magicBtnExport = document.getElementById('magic-btn-export');
-const magicBtnReview = document.getElementById('magic-btn-review');
-const magicBgBlur = document.getElementById('magic-bg-blur');
+  const standardUiView = document.getElementById('standard-ui-view');
+  const magicModeView = document.getElementById('magic-mode-view');
+  const magicBtnExport = document.getElementById('magic-btn-export');
+  const magicBtnReview = document.getElementById('magic-btn-review');
+  const magicBgBlur = document.getElementById('magic-bg-blur');
 
-if (isMagicMode && standardUiView && magicModeView) {
-  standardUiView.classList.add('hidden');
-  magicModeView.classList.remove('hidden');
-  magicModeView.classList.add('flex');
-  
-  if (magicBgBlur) {
-    magicBgBlur.classList.remove('hidden');
-  } else {
-    // Fallback if index.html lacks #magic-bg-blur
-    magicModeView.classList.add('backdrop-blur-2xl', 'bg-slate-950/40');
+  if (isMagicMode && standardUiView && magicModeView) {
+    standardUiView.classList.add('hidden');
+    magicModeView.classList.remove('hidden');
+    magicModeView.classList.add('flex');
+    if(magicBgBlur) magicBgBlur.classList.remove('hidden');
+    
+    // Make the body transparent to allow the crew portal to show through beneath the blur
+    document.documentElement.classList.add('magic-transparent');
+    document.body.classList.add('magic-transparent');
   }
-  
-  document.documentElement.classList.add('magic-transparent');
-  document.body.classList.add('magic-transparent');
-}
 
-window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'ROSTER_DATA') {
-    const rawText = event.data.text;
-    try {
-      state.parsedEvents = ParserEngine.parseRawText(rawText);
-      updateFilterCounts();
-      renderActiveView();
-      
-      if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
-      
-      if (isMagicMode) {
-        updateMagicStatistics();
-      } else {
-        if (rawInput) rawInput.value = rawText; 
-      }
-    } catch (err) {
-      console.error("Magic mode parsing error:", err);
-      if (typeof Toast !== 'undefined' && Toast.show) {
-        Toast.show("Failed to parse roster. Review manually.", "error");
-      } else {
-        alert("Failed to parse roster. Please review manually.");
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ROSTER_DATA') {
+      const rawText = event.data.text;
+      try {
+        state.parsedEvents = ParserEngine.parseRawText(rawText);
+        updateFilterCounts();
+        renderActiveView();
+        
+        if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
+        
+        if (isMagicMode) {
+          updateMagicStatistics();
+        } else {
+           if (rawInput) rawInput.value = rawText; 
+        }
+      } catch (err) {
+        console.error("Magic mode parsing error:", err);
+        Toast.show("Failed to instantly parse roster. Please review manually.", "error");
       }
     }
-  }
-});
+  });
 
   function updateMagicStatistics() {
     let flightCount = 0;
