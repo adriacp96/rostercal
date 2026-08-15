@@ -4,7 +4,7 @@
   "LAY":    { "title": "Layover Rest", "emoji": "🏨", "category": "layover" },
   "REST":   { "title": "Station Rest", "emoji": "🏨", "category": "layover" },
   "TURN":   { "title": "Turnaround", "emoji": "🔄", "category": "turnaround" },
-  "REP":    { "title": "Flight Check-in / eGate Report", "emoji": "🕒", "category": "report", "location": "Emirates Group Headquarters (25.241969278913942, 55.36591788100843)" },
+  "REP":    { "title": "eGate Report", "emoji": "🕒", "category": "report", "location": "Emirates Group Headquarters (25.241969278913942, 55.36591788100843)" },
   "3877A":  { "title": "A380 & B777 Cross Qualification (AM)", "emoji": "📚", "category": "training" },
   "38HW":   { "title": "A380 High Density Workshop", "emoji": "📚", "category": "training" },
   "38SRP":  { "title": "JCL Service Refresher A380 (PM)", "emoji": "📚", "category": "training" },
