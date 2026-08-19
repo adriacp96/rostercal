@@ -171,6 +171,7 @@ const BUILTIN_EVENT_CODES = {
   EK:     { title: "Emirates Flight", emoji: "✈️", category: "flight" },
   LAY:    { title: "Layover Rest", emoji: "🏨", category: "layover" },
   REST:   { title: "Station Rest", emoji: "🏨", category: "layover" },
+  TURN:   { title: "Turnaround", emoji: "🔄", category: "turnaround" },
   REP:    { title: "Flight Check-in / eGate Report", emoji: "🕒", category: "report" },
   "3877A":{ title: "A380 & B777 Cross Qualification (AM)", emoji: "📚", category: "training" },
   "38HW": { title: "A380 High Density Workshop", emoji: "📚", category: "training" },
@@ -208,9 +209,6 @@ const BUILTIN_EVENT_CODES = {
   CSTA:   { title: "Cabin Supervisor Trainee Program (AM)", emoji: "📚", category: "training" },
   CSTP:   { title: "Cabin Supervisor Trainee Programme", emoji: "📚", category: "training" },
   "DG-I": { title: "Dangerous Goods Initial", emoji: "📚", category: "training" },
-  FA11:   { title: "SEP Airwing Group 1 (Day 1)", emoji: "📚", category: "training" },
-  FA12:   { title: "SEP Airwing Group 1 (Day 2)", emoji: "📚", category: "training" },
-  FG:     { title: "Airwing SEP", emoji: "📚", category: "training" },
   ER00:   { title: "Adhoc SEP CBA Resit", emoji: "📚", category: "training" },
   ER01:   { title: "Adhoc SEP CBA Resit", emoji: "📚", category: "training" },
   ER02:   { title: "Adhoc SEP CBA Resit", emoji: "📚", category: "training" },
@@ -222,6 +220,8 @@ const BUILTIN_EVENT_CODES = {
   ER51:   { title: "SEP C Recurrent", emoji: "📚", category: "training" },
   ER511:  { title: "SEP Recurrent A350/A380/B777 (Day 1)", emoji: "📚", category: "training" },
   ER512:  { title: "SEP Recurrent A350/A380/B777 (Day 2)", emoji: "📚", category: "training" },
+  ER551:  { title: "SEP / Aircraft Training (ER551)", emoji: "📚", category: "training" },
+  ER552:  { title: "SEP / Aircraft Training (ER552)", emoji: "📚", category: "training" },
   ER61:   { title: "SEP C Recurrent (Day 2)", emoji: "📚", category: "training" },
   ER71:   { title: "SEP C Recurrent", emoji: "📚", category: "training" },
   ER81:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
@@ -247,9 +247,14 @@ const BUILTIN_EVENT_CODES = {
   ER912:  { title: "SEP Recurrent A319 Fleet (Day 2)", emoji: "📚", category: "training" },
   ER913:  { title: "SEP Recurrent A319 Fleet (Day 3)", emoji: "📚", category: "training" },
   ER92:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
+  FA11:   { title: "SEP Airwing Group 1 (Day 1)", emoji: "📚", category: "training" },
+  FA12:   { title: "SEP Airwing Group 1 (Day 2)", emoji: "📚", category: "training" },
   FCP1:   { title: "First Class Plating (AM Session)", emoji: "📚", category: "training" },
   FCP1A:  { title: "First Class Plating (AM Session 2)", emoji: "📚", category: "training" },
   FCP2A:  { title: "First Class Plating (Mid Session 2)", emoji: "📚", category: "training" },
+  FG:     { title: "Airwing SEP", emoji: "📚", category: "training" },
+  JP:     { title: "Business Class Upgrade Course - PM", emoji: "📚", category: "training" },
+  JP1:    { title: "Business Class Upgrade Course - PM Day 1", emoji: "📚", category: "training" },
   MFP:    { title: "My Flight Performance (CC)", emoji: "📚", category: "training" },
   PSR:    { title: "Peer Support Refresher", emoji: "📚", category: "training" },
   RCY5A:  { title: "Aircraft Refresher A350", emoji: "📚", category: "training" },
@@ -264,8 +269,8 @@ const BUILTIN_EVENT_CODES = {
   RCY83:  { title: "Cabin Crew Aircraft Refresher A380", emoji: "📚", category: "training" },
   RCY84:  { title: "Cabin Crew Aircraft Refresher A380", emoji: "📚", category: "training" },
   RMTA:   { title: "SEP Recurrent Remedial (GMT)", emoji: "📚", category: "training" },
-  SIMUL:  { title: "Simulator Duty", emoji: "📚", category: "training" },
   SIM:    { title: "Simulator Duty", emoji: "📚", category: "training" },
+  SIMUL:  { title: "Simulator Duty", emoji: "📚", category: "training" },
   SRA4:   { title: "JCL Service Refresher Main Fleet (AM)", emoji: "📚", category: "training" },
   SRCA:   { title: "SEP Recall B777/A380", emoji: "📚", category: "training" },
   SRFF:   { title: "Security Referral", emoji: "📚", category: "training" },
@@ -274,30 +279,39 @@ const BUILTIN_EVENT_CODES = {
   SYAB:   { title: "Ab-Initio Supy Crew", emoji: "📚", category: "training" },
   YSR:    { title: "YC Service Refresher", emoji: "📚", category: "training" },
   RSV:    { title: "Reserve Standby", emoji: "⏳", category: "standby" },
+  S12:    { title: "Standby Reserve (S12)", emoji: "⏳", category: "standby" },
   S17:    { title: "Standby from 17:00 (CC)", emoji: "⏳", category: "standby" },
   S21:    { title: "Standby from 21:00 (CC)", emoji: "⏳", category: "standby" },
   SAB700: { title: "Airport Standby (07:00)", emoji: "🛃", category: "standby" },
   SD:     { title: "Stand Down Reserve", emoji: "🛋️", category: "standby" },
+  SL21:   { title: "High Quality Standby (SL21)", emoji: "⏳", category: "standby" },
   SO08:   { title: "Cross Qualification Standby (08:00)", emoji: "⏳", category: "standby" },
   SO21:   { title: "Cross Qualification Standby (21:00)", emoji: "⏳", category: "standby" },
+  SQA0030:{ title: "Airport Standby (00:30)", emoji: "🛃", category: "standby" },
+  SQA12:  { title: "Airport Standby (12:00)", emoji: "🛃", category: "standby" },
+  SQA2330:{ title: "Airport Standby (23:30)", emoji: "🛃", category: "standby" },
   STBY:   { title: "Standby Reserve", emoji: "⏳", category: "standby" },
-  DO:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
-  OFF:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
   AL:     { title: "Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
+  DO:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
   FI:     { title: "Emergency Leave", emoji: "🏖️", category: "off", isAllDay: true },
   FP:     { title: "Folga Pedida (Requested Day Off)", emoji: "🏠", category: "off", isAllDay: true },
+  LLV:    { title: "Leave (LLV)", emoji: "🏖️", category: "off", isAllDay: true },
   LV:     { title: "Normal Annual Leave", emoji: "🏖️", category: "off", isAllDay: true },
   NPA:    { title: "No Planned Assignment", emoji: "🏠", category: "off", isAllDay: true },
+  OFF:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
   PSB:    { title: "Peer Support Basic Day Off", emoji: "🏠", category: "off", isAllDay: true },
   ROF:    { title: "Requested Day Off", emoji: "🏠", category: "off", isAllDay: true },
   RW:     { title: "Return to Work", emoji: "🏠", category: "off", isAllDay: true },
   RWS:    { title: "Return to Work Supy", emoji: "🏠", category: "off", isAllDay: true },
+  SK:     { title: "Sick", emoji: "🏥", category: "off", isAllDay: true },
   VA:     { title: "Late / Overdue Vacation", emoji: "🏖️", category: "off", isAllDay: true },
   XX:     { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
   XXC:    { title: "Company Day Off", emoji: "🏠", category: "off", isAllDay: true },
+  XXH:    { title: "Day Off (XXH)", emoji: "🏠", category: "off", isAllDay: true },
   XXP:    { title: "Day Off Planning", emoji: "🏠", category: "off", isAllDay: true },
   XXR:    { title: "Day Off", emoji: "🏠", category: "off", isAllDay: true },
   XXV:    { title: "Day Off (Visa Change)", emoji: "🏠", category: "off", isAllDay: true },
+  AVD:    { title: "Available Duty Day", emoji: "📌", category: "general" },
   IV:     { title: "Office Interview", emoji: "👔", category: "general" },
   O:      { title: "Office Duty", emoji: "🏢", category: "general" },
   UIV:    { title: "US Visa Interview", emoji: "🛂", category: "general" },
@@ -400,7 +414,6 @@ class SupabaseLogger {
     if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID") || !SUPABASE_ANON_KEY) return;
     if (events.length === 0) return;
     
-    // Generate a unique ID for this specific paste action to group the rows together
     const sessionId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     
     const payload = events.map(evt => ({
@@ -424,7 +437,7 @@ class SupabaseLogger {
           "Content-Type": "application/json",
           "apikey": SUPABASE_ANON_KEY,
           "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-          "Prefer": "return=minimal" // Tells Supabase not to send the payload back, saving bandwidth
+          "Prefer": "return=minimal"
         },
         body: JSON.stringify(payload)
       });
@@ -463,13 +476,11 @@ class Toast {
     
     container.appendChild(toast);
 
-    // Animate in
     requestAnimationFrame(() => {
       toast.classList.remove('translate-y-10', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
     });
 
-    // Animate out and remove
     setTimeout(() => {
       toast.classList.remove('translate-y-0', 'opacity-100');
       toast.classList.add('translate-y-10', 'opacity-0');
@@ -478,7 +489,7 @@ class Toast {
   }
 }
 
-// --- Formatting Engine (Clean Typography Notes) ---
+// --- Formatting Engine ---
 class FormatEngine {
   static getTitle(evt) {
     if (evt.category === 'flight') {
@@ -528,7 +539,6 @@ class FormatEngine {
     }
   }
 
-  // Visual Card Notes (Using Universal 🌐 and ➡️ Symbols)
   static getDescription(evt) {
     const lines = [];
     const origMeta = state.airports[evt.origin] || BUILTIN_AIRPORTS[evt.origin];
@@ -643,13 +653,13 @@ class FormatEngine {
       lines.push(`ℹ️ Ensure required SEP manuals, IDs, and licenses are updated before attending.`);
     } else if (evt.category === 'off') {
       const isBeachLeave = evt.code.startsWith("AL") || evt.code.startsWith("LV") || evt.code === "FI" || evt.code === "VA" || evt.code === "LLV";
-      const headerEmoji = isBeachLeave ? "🏖️" : "🏠";
+      const headerEmoji = evt.code === "SK" ? "🏥" : (isBeachLeave ? "🏖️" : "🏠");
       lines.push(`${headerEmoji} ROSTERED DAY OFF / LEAVE`);
       lines.push(`----------------------------------`);
       lines.push(`🔖 Code:   ${evt.code}`);
       lines.push(`📋 Status: ${evt.rawTitle || evt.title}`);
       lines.push(`----------------------------------`);
-      lines.push(`ℹ️ Guaranteed 24-hour rest period free from duty assignments.`);
+      lines.push(`ℹ️ Guaranteed rest period free from duty assignments.`);
     } else {
       lines.push(`📌 EMIRATES CREW DUTY`);
       lines.push(`----------------------------------`);
@@ -667,9 +677,8 @@ class FormatEngine {
   }
 }
 
-// --- Universal Hybrid Parser Engine (DST-Aware) ---
+// --- Universal Hybrid Parser Engine ---
 class ParserEngine {
-  // --- Dynamic DST Offset Calculator ---
   static getOffsetMinutes(ianaZone, dateObj) {
     try {
       const formatter = new Intl.DateTimeFormat('en-US', {
@@ -677,7 +686,7 @@ class ParserEngine {
         timeZoneName: 'shortOffset',
       });
       const parts = formatter.formatToParts(dateObj);
-      const tzPart = parts.find(p => p.type === 'timeZoneName').value; // e.g., "GMT+2", "GMT-5", "GMT"
+      const tzPart = parts.find(p => p.type === 'timeZoneName').value;
       
       if (tzPart === 'GMT' || tzPart === 'UTC') return 0;
       
@@ -690,11 +699,10 @@ class ParserEngine {
       }
       return null;
     } catch (e) {
-      return null; // Fallback trigger if IANA is invalid or unsupported
+      return null;
     }
   }
 
-  // --- Dynamic DST-Aware Timezone Engine ---
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
     const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
@@ -704,35 +712,24 @@ class ParserEngine {
     const ianaZone = airport?.iana || "Asia/Dubai";
     const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
 
-    // 1. Create a naive UTC date treating the local time as UTC
     const naiveDate = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
-    
-    // 2. Extract the true DST-aware offset for that specific date and location
     let offsetMinutes = ParserEngine.getOffsetMinutes(ianaZone, naiveDate);
     
-    // 3. Fallback to static math offset if Intl API fails
     if (offsetMinutes === null) {
       offsetMinutes = fallbackOffset * 60;
     }
 
-    // 4. Adjust the naive date by the offset to calculate true UTC
     return new Date(naiveDate.getTime() - (offsetMinutes * 60000));
   }
 
   static parseRawText(rawText) {
     const events = [];
     
-    // Scan the first 500 characters of the roster (the header)
     const headerText = rawText.substring(0, 500);
-    
-    // 1. Try to find specifically "Staff No.:" followed by 6 digits
     let staffMatch = headerText.match(/Staff No\.:\s*(\d{6})/i);
-    
-    // 2. Fallback to generic 6-digit number if that exact string isn't found
     if (!staffMatch) {
       staffMatch = headerText.match(/\b(\d{6})\b/);
     }
-    
     state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
     
     let currentYear = new Date().getFullYear();
@@ -844,7 +841,6 @@ class ParserEngine {
             repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
           }
 
-          // Report starts 1 hour BEFORE the report time (the window)
           const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
           
           const repEventDate = new Date(repStartUtc);
@@ -905,16 +901,20 @@ class ParserEngine {
           codeMeta = { title: `High Quality Standby (${code})`, emoji: "⏳", category: "standby", isAllDay: false };
         } else if (code.startsWith("S") && /^\d/.test(code.slice(1))) {
           codeMeta = { title: `Standby Reserve (${code})`, emoji: "⏳", category: "standby", isAllDay: false };
-        } else if (code.startsWith("ER") || code.startsWith("FR") || code.startsWith("C5") || code.startsWith("RCY") || code.startsWith("38") || code.startsWith("FA") || code.startsWith("FG")) {
+        } else if (code.startsWith("ER") || code.startsWith("FR") || code.startsWith("C5") || code.startsWith("RCY") || code.startsWith("38") || code.startsWith("FA") || code.startsWith("FG") || code.startsWith("JP")) {
           codeMeta = { title: `SEP / Aircraft Training (${code})`, emoji: "📚", category: "training", isAllDay: false };
         } else if (code.startsWith("AL") || code.startsWith("LV") || code === "FI" || code === "VA" || code === "LLV") {
           codeMeta = { title: `Leave (${code})`, emoji: "🏖️", category: "off", isAllDay: true };
+        } else if (code === "SK") {
+          codeMeta = { title: `Sick (${code})`, emoji: "🏥", category: "off", isAllDay: true };
         } else if (code.startsWith("XX") || code.startsWith("DO") || code.startsWith("OFF") || code.startsWith("ROF") || code === "FP" || code === "NPA" || code === "PSB" || code === "RW" || code === "RWS") {
           codeMeta = { title: `Day Off (${code})`, emoji: "🏠", category: "off", isAllDay: true };
         } else if (code.startsWith("SBY") || code.startsWith("SO") || code.startsWith("RSV") || code.startsWith("ASBY") || code.startsWith("ESBY") || code.startsWith("HSBY")) {
           codeMeta = { title: `Standby Reserve (${code})`, emoji: "⏳", category: "standby", isAllDay: false };
         } else if (code === "LAY" || code === "REST") {
           codeMeta = { title: "Layover Rest", emoji: "🏨", category: "layover", isAllDay: false };
+        } else if (code === "TURN") {
+          codeMeta = { title: "Turnaround", emoji: "🔄", category: "turnaround", isAllDay: false };
         } else {
           codeMeta = { title: cleanChunk, emoji: "📌", category: "general", isAllDay: false };
         }
@@ -929,7 +929,7 @@ class ParserEngine {
       let locCode = HOME_BASE;
 
       if (!isAllDay) {
-        if (codeMeta.category === 'layover') {
+        if (codeMeta.category === 'layover' || codeMeta.category === 'turnaround') {
           locCode = tokens[1] ? tokens[1].toUpperCase() : HOME_BASE;
           const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
           const city = airportMeta ? airportMeta.city : locCode;
@@ -1032,18 +1032,15 @@ class ParserEngine {
 
     events.sort((a, b) => a.startUtc - b.startUtc);
     
-    // Auto-detect layovers & turnarounds before enriching them
     ParserEngine.detectGroundTimes(events);
     ParserEngine.enrichLayoverRest(events);
 
-    // Asynchronously log collected event codes and full roster data to Supabase
     SupabaseLogger.logCodes(events);
     SupabaseLogger.logEvents(events);
     
     return events;
   }
 
-  // --- Ground Time Detection (DST-Aware) ---
   static detectGroundTimes(events) {
     if (state.preferences.autoLayovers === false) return;
 
@@ -1054,7 +1051,6 @@ class ParserEngine {
       const inbound = flights[i];
       const outbound = flights[i + 1];
 
-      // Crew arrives at an outstation and departs from the same outstation
       if (inbound.destination !== HOME_BASE && inbound.destination === outbound.origin) {
         const diffMs = outbound.startUtc - inbound.endUtc;
         
@@ -1066,7 +1062,7 @@ class ParserEngine {
           const durationStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
           
           const existingLayover = events.find(e => 
-            e.category === 'layover' && 
+            (e.category === 'layover' || e.category === 'turnaround') && 
             e.locationCode === inbound.destination &&
             e.startUtc >= inbound.endUtc && 
             e.endUtc <= outbound.startUtc
@@ -1154,7 +1150,6 @@ class ParserEngine {
     events.sort((a, b) => a.startUtc - b.startUtc);
   }
 
-  // --- Isolated Station Rest Calculator (DST-Aware) ---
   static enrichLayoverRest(events) {
     try {
       const layovers = events.filter(e => e.category === 'layover');
@@ -1210,7 +1205,7 @@ class ParserEngine {
   }
 }
 
-// --- iCal (.ics) Generator (Surrogate-Safe Line Folding) ---
+// --- iCal (.ics) Generator ---
 class ICalGenerator {
   static generate(events) {
     const lines = [
@@ -1272,7 +1267,6 @@ class ICalGenerator {
     return (str || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
   }
 
-  // Safe folding algorithm that never splits surrogate pairs
   static foldLine(line) {
     const maxLen = 70;
     if (line.length <= maxLen) return line;
@@ -1328,7 +1322,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearOverlay = document.getElementById("clear-success-overlay");
   const btnClearBox = document.getElementById("btn-clear-box");
 
-  // --- SPA MAGIC MODE CONTROLLER ---
+  // --- Magic Mode Controller ---
   const urlParams = new URLSearchParams(window.location.search);
   const isMagicMode = urlParams.get('magic') === 'true';
 
@@ -1342,9 +1336,8 @@ document.addEventListener("DOMContentLoaded", () => {
     standardUiView.classList.add('hidden');
     magicModeView.classList.remove('hidden');
     magicModeView.classList.add('flex');
-    if(magicBgBlur) magicBgBlur.classList.remove('hidden');
+    if (magicBgBlur) magicBgBlur.classList.remove('hidden');
     
-    // Make the body transparent to allow the crew portal to show through beneath the blur
     document.documentElement.classList.add('magic-transparent');
     document.body.classList.add('magic-transparent');
   }
@@ -1362,7 +1355,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isMagicMode) {
           updateMagicStatistics();
         } else {
-           if (rawInput) rawInput.value = rawText; 
+          if (rawInput) rawInput.value = rawText; 
         }
       } catch (err) {
         console.error("Magic mode parsing error:", err);
@@ -1400,12 +1393,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const blockHours = Math.floor(totalMs / (1000 * 60 * 60));
     
-    // Elegant Number Counter Animation Helper (with Delay)
     const animateValue = (id, endValue, suffix = '', duration = 1200, delayMs = 0) => {
       const obj = document.getElementById(id);
       if (!obj) return;
       
-      // Ensure it starts at 0 visually before the delay finishes
       obj.innerText = "0" + suffix;
 
       setTimeout(() => {
@@ -1413,7 +1404,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const step = (timestamp) => {
           if (!startTimestamp) startTimestamp = timestamp;
           const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-          // easeOutExpo for a rapid start and elegant slowdown
           const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
           obj.innerText = Math.floor(easeProgress * endValue) + suffix;
           if (progress < 1) {
@@ -1424,7 +1414,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, delayMs);
     };
 
-    // Trigger animations with staggered delays that fire right as the boxes finish sliding in.
     animateValue('stat-flights', flightCount, '', 1200, 800);
     animateValue('stat-hours', blockHours, 'h', 1200, 900);
     animateValue('stat-layovers', layoverCount, '', 1200, 1000);
@@ -1439,7 +1428,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (magicBtnExport) {
     magicBtnExport.addEventListener('click', () => {
-      if(btnExport) btnExport.click(); 
+      if (btnExport) btnExport.click(); 
     });
   }
 
@@ -1462,7 +1451,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-  // --- END MAGIC MODE ---
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
