@@ -247,11 +247,11 @@ const BUILTIN_EVENT_CODES = {
   ER912:  { title: "SEP Recurrent A319 Fleet (Day 2)", emoji: "📚", category: "training" },
   ER913:  { title: "SEP Recurrent A319 Fleet (Day 3)", emoji: "📚", category: "training" },
   ER92:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
-  FA11:   { title: "SEP Airwing Group 1 (Day 1)", emoji: "📚", category: "training" },
-  FA12:   { title: "SEP Airwing Group 1 (Day 2)", emoji: "📚", category: "training" },
-  FCP1:   { title: "First Class Plating (AM Session)", emoji: "📚", category: "training" },
-  FCP1A:  { title: "First Class Plating (AM Session 2)", emoji: "📚", category: "training" },
-  FCP2A:  { title: "First Class Plating (Mid Session 2)", emoji: "📚", category: "training" },
+  FA11:   { title: "SEP Airwing Group 1 (Day 1)", "emoji": "📚", "category": "training" },
+  FA12:   { title: "SEP Airwing Group 1 (Day 2)", "emoji": "📚", "category": "training" },
+  FCP1:   { title: "First Class Plating (AM Session)", "emoji": "📚", "category": "training" },
+  FCP1A:  { title: "First Class Plating (AM Session 2)", "emoji": "📚", "category": "training" },
+  FCP2A:  { title: "First Class Plating (Mid Session 2)", "emoji": "📚", "category": "training" },
   FG:     { title: "Airwing SEP", emoji: "📚", category: "training" },
   JP:     { title: "Business Class Upgrade Course - PM", emoji: "📚", category: "training" },
   JP1:    { title: "Business Class Upgrade Course - PM Day 1", emoji: "📚", category: "training" },
@@ -679,30 +679,7 @@ class FormatEngine {
 
 // --- Universal Hybrid Parser Engine ---
 class ParserEngine {
-  static getOffsetMinutes(ianaZone, dateObj) {
-    try {
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: ianaZone,
-        timeZoneName: 'shortOffset',
-      });
-      const parts = formatter.formatToParts(dateObj);
-      const tzPart = parts.find(p => p.type === 'timeZoneName').value;
-      
-      if (tzPart === 'GMT' || tzPart === 'UTC') return 0;
-      
-      const match = tzPart.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
-      if (match) {
-        const sign = match[1] === '-' ? -1 : 1;
-        const hrs = parseInt(match[2], 10);
-        const mins = match[3] ? parseInt(match[3], 10) : 0;
-        return sign * (hrs * 60 + mins);
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
+  
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
     const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
@@ -712,14 +689,18 @@ class ParserEngine {
     const ianaZone = airport?.iana || "Asia/Dubai";
     const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
 
-    const naiveDate = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
-    let offsetMinutes = ParserEngine.getOffsetMinutes(ianaZone, naiveDate);
-    
-    if (offsetMinutes === null) {
-      offsetMinutes = fallbackOffset * 60;
+    try {
+      if (window.zonedTimeToUtc) {
+        const localString = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+        return window.zonedTimeToUtc(localString, ianaZone);
+      } else {
+        throw new Error("date-fns-tz module not yet loaded");
+      }
+    } catch (e) {
+      console.warn(`Timezone parsing failed for ${ianaZone}, falling back to static offset.`);
+      const naiveDate = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
+      return new Date(naiveDate.getTime() - (fallbackOffset * 60 * 60000));
     }
-
-    return new Date(naiveDate.getTime() - (offsetMinutes * 60000));
   }
 
   static parseRawText(rawText) {
