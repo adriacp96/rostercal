@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
   
-  <!-- Added date-fns-tz via ESM for robust Timezone handling -->
   <script type="module">
     import { zonedTimeToUtc } from 'https://cdn.jsdelivr.net/npm/date-fns-tz@3.1.3/+esm';
     window.zonedTimeToUtc = zonedTimeToUtc;
@@ -15,10 +14,8 @@
 </head>
 <body class="text-slate-100 min-h-screen lg:h-screen lg:overflow-x-hidden font-sans flex flex-col justify-between selection:bg-blue-500 selection:text-white relative">
   
-  <!-- Magic Background Blur Overlay -->
   <div id="magic-bg-blur" class="hidden fixed inset-0 z-0 bg-slate-950/40 backdrop-blur-2xl transition-all duration-500"></div>
 
-  <!-- Navbar - Translucent layer following Apple Design depth rules -->
   <header class="apple-glass z-50 relative">
     <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
       <div class="flex items-center space-x-3">
@@ -39,15 +36,11 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-4 py-3 flex-grow flex flex-col relative w-full min-h-0 z-10">
     
-    <!-- Standard UI (Wrapped for view-switching) -->
     <div id="standard-ui-view" class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow items-stretch w-full min-h-0">
       
-      <!-- Input Column (Left 5 Cols) -->
       <div class="lg:col-span-5 space-y-3 flex flex-col h-full min-h-0">
-        <!-- Apple Glass translucent layers -->
         <div class="apple-glass rounded-2xl p-3.5 flex flex-col flex-grow h-full justify-between min-h-0">
           
           <div class="flex flex-col flex-grow space-y-2.5 min-h-0">
@@ -58,7 +51,6 @@
               </div>
             </div>
 
-            <!-- Buttons use active:scale to respond on pointer-down -->
             <div class="flex items-center space-x-2 shrink-0">
               <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer"
                  class="flex-1 h-[32px] bg-slate-900/90 hover:bg-slate-700/80 text-sky-400 hover:text-sky-200 border border-slate-700/80 font-medium px-2.5 rounded-xl flex items-center justify-center space-x-1.5 text-[11px] shadow-sm cursor-pointer group btn">
@@ -127,9 +119,7 @@
         </div>
       </div>
 
-      <!-- Preview & Export Column (Right 7 Cols) -->
       <div class="lg:col-span-7 space-y-3 flex flex-col h-full min-h-0">
-        <!-- Apple Glass translucent layer -->
         <div class="apple-glass rounded-2xl p-3.5 flex flex-col justify-between flex-grow h-full min-h-0">
           
           <div class="flex flex-col flex-grow min-h-0">
@@ -164,7 +154,6 @@
               <span class="font-mono text-[9px] text-slate-500 hidden sm:inline">Click row checkboxes to toggle sync</span>
             </div>
 
-            <!-- LIST VIEW CONTAINER -->
             <div id="list-view-container" class="block flex-grow flex flex-col min-h-0">
               <div class="overflow-x-auto flex-grow overflow-y-auto pr-1 rounded-xl border border-slate-700/60 bg-slate-950/40 shadow-inner min-h-0">
                 <table class="w-full text-left border-collapse text-xs">
@@ -191,7 +180,6 @@
               </div>
             </div>
 
-            <!-- MONTH VIEW CONTAINER -->
             <div id="month-view-container" class="hidden flex-grow flex flex-col min-h-0">
               <div class="bg-slate-950/50 border border-slate-700/60 rounded-xl p-2.5 shadow-inner flex flex-col flex-grow min-h-0">
                 <div class="flex items-center justify-between mb-1.5 px-1 shrink-0 flex-wrap gap-1">
@@ -212,7 +200,6 @@
 
           </div>
 
-          <!-- Bottom Action Bar -->
           <div class="pt-2.5 border-t border-slate-700/80 mt-2.5 flex items-center justify-between gap-2 shrink-0">
             <button id="btn-open-prefs" class="h-[34px] bg-slate-900/90 hover:bg-slate-700 text-slate-200 font-semibold px-3 rounded-xl border border-slate-700/80 shadow flex items-center justify-center space-x-1 text-xs whitespace-nowrap cursor-pointer btn">
               <span>⚙️</span><span class="hidden sm:inline">Customise</span>
@@ -227,10 +214,8 @@
 
     </div>
 
-    <!-- MAGIC MODE OVERLAY -->
     <div id="magic-mode-view" class="hidden fixed inset-0 z-[100] bg-transparent flex-col items-center justify-center p-4 sm:p-8 animate-fade-in text-center w-full min-h-screen overflow-y-auto overflow-x-hidden">
       
-      <!-- Aviation Animation (SVG) -->
       <div class="relative w-full max-w-lg h-20 sm:h-28 md:h-32 mb-4 sm:mb-6 flex justify-center items-center magic-item delay-100 mt-auto">
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-radar-sweep rounded-full blur-xl"></div>
         <img src="success.gif" alt="Plane" class="absolute w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 animate-takeoff drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] z-10" />
@@ -240,7 +225,6 @@
       <p id="magic-month-title" class="text-blue-800 font-bold mb-6 sm:mb-8 md:mb-10 uppercase tracking-tight text-[10px] sm:text-xs md:text-sm magic-item delay-300">Listening for Roster Data...</p>
       
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 w-full max-w-6xl mb-8 px-1 sm:px-0">
-        <!-- Magic UI Cards use Apple Design layers -->
         <div class="apple-glass rounded-2xl p-3 sm:p-4 md:p-5 text-center shadow-lg transform magic-item delay-400 flex flex-col justify-center">
           <div class="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">🛫</div>
           <div id="stat-flights" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-400 tracking-tight">0</div>
@@ -285,7 +269,6 @@
 
   </main>
 
-  <!-- Admin Login Modal -->
   <div id="admin-login-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
     <div class="apple-glass border border-slate-700/80 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-left space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
@@ -308,7 +291,6 @@
     </div>
   </div>
 
-  <!-- Instructions Modal -->
   <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <div class="apple-glass border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
       <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold p-1 cursor-pointer btn">✕</button>
@@ -328,7 +310,6 @@
     </div>
   </div>
 
-  <!-- Customise Export Preferences Modal -->
   <div id="prefs-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
     <div class="apple-glass border border-slate-700/80 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative text-left space-y-5 max-h-[90vh] overflow-y-auto">
       
@@ -384,13 +365,25 @@
               <p class="text-[10px] text-slate-400 mt-1">Automatically calculates and outputs Layover (>4h) and Turnaround events.</p>
             </div>
 
-            <div class="sm:col-span-2 pt-2">
+            <div class="pt-2">
               <label class="block text-xs font-semibold text-slate-200 mb-1">FlightRadar24 Live Link</label>
               <select id="pref-fr24-link" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 cursor-pointer shadow-inner">
                 <option value="true" selected>✅ Yes — Include tracking URL</option>
                 <option value="false">❌ No — Hide tracking link</option>
               </select>
               <p class="text-[10px] text-slate-400 mt-1">Adds a clickable real-time flight tracking URL directly inside your calendar notes.</p>
+            </div>
+
+            <div class="pt-2">
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Event Reminder (Alarm)</label>
+              <select id="pref-alarm-reminder" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-blue-500 cursor-pointer shadow-inner">
+                <option value="NONE">❌ No Reminder</option>
+                <option value="60">⏱️ 1 Hour Before</option>
+                <option value="120" selected>⏱️ 2 Hours Before</option>
+                <option value="180">⏱️ 3 Hours Before</option>
+                <option value="1440">📅 24 Hours Before</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Automatically adds an alert/push notification to your calendar events.</p>
             </div>
           </div>
         </div>
@@ -454,7 +447,6 @@
 
   <script type="module" src="app.js"></script>
   <script>
-    // --- ADMIN LOGIN LOGIC ---
     const adminModal = document.getElementById('admin-login-modal');
     const btnAdminLogin = document.getElementById('btn-admin-login');
     const btnCloseAdmin = document.getElementById('btn-close-admin-modal');
@@ -462,7 +454,6 @@
     const adminInput = document.getElementById('admin-passcode-input');
     const adminError = document.getElementById('admin-login-error');
 
-    // Change this passcode as needed
     const ADMIN_PASSCODE = "Adriacp96";
 
     btnAdminLogin.addEventListener('click', () => {
