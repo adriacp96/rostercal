@@ -27,19 +27,23 @@ class AppState {
     this.currentYear = new Date().getFullYear();
     this.currentMonth = new Date().getMonth();
     this.currentStaffNumber = 'UNKNOWN';
-    this.preferences = {
+    
+    // Load saved preferences from LocalStorage
+    const savedPrefs = localStorage.getItem('rosterCalPrefs');
+    this.preferences = savedPrefs ? JSON.parse(savedPrefs) : {
       calendarName: "Emirates Roster",
       flightTitleFormat: "CITY_IATA",
       dutyTitleFormat: "EMOJI_TITLE",
       includeReport: "HOME_ONLY",
       includeFR24: true,
       autoLayovers: true,
-      includeLocal: true
+      includeLocal: true,
+      alarmReminder: "120" // Defaults to 2 hours
     };
   }
 
   init() {
-    console.log("✅ Diccionarios de datos cargados vía ESM correctamente.");
+    console.log("✅ Data dictionaries loaded successfully via ESM.");
   }
 }
 const state = new AppState();
@@ -370,7 +374,6 @@ class ParserEngine {
     const ianaZone = airport?.iana || "Asia/Dubai";
     const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
 
-    // NORMALIZACIÓN DE FECHA: Evita que crashee si 'day' excede los días del mes (ej. 32 de enero se convierte en 1 de febrero)
     const normalizedDate = new Date(year, monthIndex, day);
     const normYear = normalizedDate.getFullYear();
     const normMonth = normalizedDate.getMonth();
@@ -439,7 +442,6 @@ class ParserEngine {
 
     if (dayMarkers.length === 0) return events;
 
-    // Variables activas para iterar cambios de mes y año
     let activeMonth = currentMonth;
     let activeYear = currentYear;
     let previousDay = 0;
@@ -448,7 +450,6 @@ class ParserEngine {
       const currentMarker = dayMarkers[i];
       const currentDay = currentMarker.day;
 
-      // DETECCIÓN DE CAMBIO DE MES: Si el número de día baja (ej: 31 -> 1), incrementamos el mes
       if (previousDay > 0 && currentDay < previousDay) {
         activeMonth++;
         if (activeMonth > 11) {
@@ -520,19 +521,15 @@ class ParserEngine {
         );
 
         if (shouldAddReport) {
-          // CÁLCULO SEGURO DE CHECK-IN Y EGATE:
           let repStartUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
 
-          // Si el reporte parseado evalúa como una hora POSTERIOR al vuelo (ej: vuelo a 01:30 y reporte a 23:00)
-          // significa indiscutiblemente que el check-in ocurrió el día anterior.
           if (repStartUtc >= startUtc) {
             repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
           }
 
-          // Asumimos que el check-in/briefing dura hasta la hora de despegue (o un estándar de tiempo razonable)
           let repEndUtc = new Date(repStartUtc.getTime() + 60 * 60 * 1000); 
           if (repEndUtc > startUtc) {
-             repEndUtc = new Date(startUtc.getTime()); // Evitar que solape con el despegue en el calendario
+             repEndUtc = new Date(startUtc.getTime()); 
           }
           
           const repEventDate = new Date(repStartUtc);
@@ -695,7 +692,6 @@ class ParserEngine {
           }
         }
 
-        // Determinar el mes y año normalizados visualmente para el dateStr
         const visualNormDate = new Date(activeYear, activeMonth, targetDay);
 
         const event = {
@@ -939,9 +935,22 @@ class ICalGenerator {
         `SUMMARY:${ICalGenerator.escape(title)}`,
         `LOCATION:${ICalGenerator.escape(e.location || "Dubai International Airport")}`,
         `DESCRIPTION:${ICalGenerator.escape(description)}`,
-        "STATUS:CONFIRMED",
-        "END:VEVENT"
+        "STATUS:CONFIRMED"
       );
+
+      // Inject VALARM block if reminder is active
+      const alarmPref = state.preferences.alarmReminder;
+      if (alarmPref && alarmPref !== "NONE") {
+        lines.push(
+          "BEGIN:VALARM",
+          `TRIGGER:-PT${alarmPref}M`,
+          "ACTION:DISPLAY",
+          "DESCRIPTION:Reminder - Emirates Duty",
+          "END:VALARM"
+        );
+      }
+
+      lines.push("END:VEVENT");
     });
 
     lines.push("END:VCALENDAR");
@@ -1215,9 +1224,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const prefReportTime = document.getElementById("pref-report-time");
   const prefFR24 = document.getElementById("pref-fr24-link");
   const prefAutoLayovers = document.getElementById("pref-auto-layovers");
+  const prefAlarmReminder = document.getElementById("pref-alarm-reminder"); // New Reminder Input
 
-  const previewFlight = document.getElementById("preview-flight-format");
-  const previewDuty = document.getElementById("preview-duty-format");
+  // Sync UI on load with Saved Preferences
+  if (prefCalName) prefCalName.value = state.preferences.calendarName;
+  if (prefFlightTitle) prefFlightTitle.value = state.preferences.flightTitleFormat;
+  if (prefDutyTitle) prefDutyTitle.value = state.preferences.dutyTitleFormat;
+  if (prefReportTime) prefReportTime.value = state.preferences.includeReport;
+  if (prefFR24) prefFR24.value = state.preferences.includeFR24.toString();
+  if (prefAutoLayovers) prefAutoLayovers.value = state.preferences.autoLayovers.toString();
+  if (prefAlarmReminder) prefAlarmReminder.value = state.preferences.alarmReminder;
 
   const updateModalPreviews = () => {
     if (previewFlight && prefFlightTitle) {
@@ -1259,6 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (prefAutoLayovers) prefAutoLayovers.value = "true";
       if (prefFlightTitle) prefFlightTitle.value = "CITY_IATA";
       if (prefDutyTitle) prefDutyTitle.value = "EMOJI_TITLE";
+      if (prefAlarmReminder) prefAlarmReminder.value = "120"; // Default to 2 hours
       updateModalPreviews();
     });
   }
@@ -1272,8 +1289,12 @@ document.addEventListener("DOMContentLoaded", () => {
         includeReport: prefReportTime?.value || "HOME_ONLY",
         includeFR24: prefFR24 ? prefFR24.value === "true" : true,
         autoLayovers: prefAutoLayovers ? prefAutoLayovers.value === "true" : true,
-        includeLocal: true
+        includeLocal: true,
+        alarmReminder: prefAlarmReminder?.value || "120"
       };
+
+      // Save to localStorage
+      localStorage.setItem('rosterCalPrefs', JSON.stringify(state.preferences));
       
       if (rawInput && rawInput.value.trim()) {
         try {
