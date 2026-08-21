@@ -1,4 +1,4 @@
-{
+export const BUILTIN_EVENT_CODES = {
   "FLT":    { "title": "Emirates Flight", "emoji": "✈️", "category": "flight" },
   "EK":     { "title": "Emirates Flight", "emoji": "✈️", "category": "flight" },
   "LAY":    { "title": "Layover Rest", "emoji": "🏨", "category": "layover" },
