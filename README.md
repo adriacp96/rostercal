@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="rostercalapp.png" alt="RosterCal App Icon" width="128" style="border-radius: 22.5%; border: 3px solid transparent; background: linear-gradient(135deg, #3b82f6, #10b981); padding: 3px;" />
+
 # ✈️ RosterCal
 **EK Cabin Crew Edition**
 
