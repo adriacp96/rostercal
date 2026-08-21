@@ -9,7 +9,7 @@ const ASSETS = [
   './airports.js',
   './event_codes.js',
   './manifest.json',
-  './calendar.png',
+  './rostercalapp.png',
   './success.gif'
 ];
 
