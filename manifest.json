@@ -1,9 +1,9 @@
 {
   "short_name": "RosterCal",
-  "name": "RosterCal — Emirates Cabin Crew Edition",
+  "name": "RosterCal \u2014 Emirates Cabin Crew Edition",
   "icons": [
     {
-      "src": "calendar.png",
+      "src": "rostercalapp.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
