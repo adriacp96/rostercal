@@ -1,4 +1,4 @@
-{
+export const BUILTIN_AIRPORTS = {
   "ABJ": { "icao": "DIAP", "city": "Abidjan", "name": "Félix-Houphouët-Boigny International Airport", "iana": "Africa/Abidjan", "utc_offset": 0 },
   "ABV": { "icao": "DNAA", "city": "Abuja", "name": "Nnamdi Azikiwe International Airport", "iana": "Africa/Lagos", "utc_offset": 1 },
   "ACC": { "icao": "DGAA", "city": "Accra", "name": "Kotoka International Airport", "iana": "Africa/Accra", "utc_offset": 0 },
