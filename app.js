@@ -244,7 +244,7 @@ const BUILTIN_EVENT_CODES = {
   ER882:  { title: "SEP Recurrent A380/B777 (Day 2)", emoji: "📚", category: "training" },
   ER91:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   ER911:  { title: "SEP Recurrent A319 Fleet (Day 1)", emoji: "📚", category: "training" },
-  ER912:  { title: "SEP Recurrent A319 Fleet (Day 2)", emoji: "📚", category: "training" },
+  ER912:  { title: "SEP Recurrent A319 Fleet (Day 2)", "emoji": "📚", "category": "training" },
   ER913:  { title: "SEP Recurrent A319 Fleet (Day 3)", emoji: "📚", category: "training" },
   ER92:   { title: "A380/B777 SEP Recurrent", emoji: "📚", category: "training" },
   FA11:   { title: "SEP Airwing Group 1 (Day 1)", "emoji": "📚", "category": "training" },
@@ -689,16 +689,22 @@ class ParserEngine {
     const ianaZone = airport?.iana || "Asia/Dubai";
     const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
 
+    // NORMALIZACIÓN DE FECHA: Evita que crashee si 'day' excede los días del mes (ej. 32 de enero se convierte en 1 de febrero)
+    const normalizedDate = new Date(year, monthIndex, day);
+    const normYear = normalizedDate.getFullYear();
+    const normMonth = normalizedDate.getMonth();
+    const normDay = normalizedDate.getDate();
+
     try {
       if (window.zonedTimeToUtc) {
-        const localString = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+        const localString = `${normYear}-${String(normMonth + 1).padStart(2, '0')}-${String(normDay).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
         return window.zonedTimeToUtc(localString, ianaZone);
       } else {
         throw new Error("date-fns-tz module not yet loaded");
       }
     } catch (e) {
       console.warn(`Timezone parsing failed for ${ianaZone}, falling back to static offset.`);
-      const naiveDate = new Date(Date.UTC(year, monthIndex, day, hours, minutes));
+      const naiveDate = new Date(Date.UTC(normYear, normMonth, normDay, hours, minutes));
       return new Date(naiveDate.getTime() - (fallbackOffset * 60 * 60000));
     }
   }
@@ -752,9 +758,25 @@ class ParserEngine {
 
     if (dayMarkers.length === 0) return events;
 
+    // Variables activas para iterar cambios de mes y año
+    let activeMonth = currentMonth;
+    let activeYear = currentYear;
+    let previousDay = 0;
+
     for (let i = 0; i < dayMarkers.length; i++) {
       const currentMarker = dayMarkers[i];
       const currentDay = currentMarker.day;
+
+      // DETECCIÓN DE CAMBIO DE MES: Si el número de día baja (ej: 31 -> 1), incrementamos el mes
+      if (previousDay > 0 && currentDay < previousDay) {
+        activeMonth++;
+        if (activeMonth > 11) {
+          activeMonth = 0;
+          activeYear++;
+        }
+      }
+      previousDay = currentDay;
+
       const nextIndex = (i + 1 < dayMarkers.length) ? dayMarkers[i + 1].index : rawText.length;
       const chunkText = rawText.substring(currentMarker.index, nextIndex).trim();
 
@@ -779,8 +801,8 @@ class ParserEngine {
         const destCity = destMeta ? destMeta.city : dest;
         const repTime = rawRepTime ? rawRepTime.replace(':', '') : null;
 
-        const startUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, depTimeStr, origin);
-        const endUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, arrTimeStr, dest);
+        const startUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, depTimeStr, origin);
+        const endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, arrTimeStr, dest);
 
         if (endUtc < startUtc) {
           endUtc.setUTCDate(endUtc.getUTCDate() + 1);
@@ -798,9 +820,9 @@ class ParserEngine {
           endTime: arrTimeStr,
           repTime: repTime,
           day: currentDay,
-          month: currentMonth,
-          year: currentYear,
-          dateStr: `${String(currentDay).padStart(2, '0')} ${Object.keys(monthNames)[currentMonth]}`,
+          month: activeMonth,
+          year: activeYear,
+          dateStr: `${String(currentDay).padStart(2, '0')} ${Object.keys(monthNames)[activeMonth]}`,
           category: "flight",
           isAllDay: false,
           startUtc: startUtc,
@@ -817,12 +839,20 @@ class ParserEngine {
         );
 
         if (shouldAddReport) {
-          let repEndUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, currentDay, repTime, origin);
-          if (repEndUtc >= startUtc) {
-            repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
+          // CÁLCULO SEGURO DE CHECK-IN Y EGATE:
+          let repStartUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
+
+          // Si el reporte parseado evalúa como una hora POSTERIOR al vuelo (ej: vuelo a 01:30 y reporte a 23:00)
+          // significa indiscutiblemente que el check-in ocurrió el día anterior.
+          if (repStartUtc >= startUtc) {
+            repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
           }
 
-          const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
+          // Asumimos que el check-in/briefing dura hasta la hora de despegue (o un estándar de tiempo razonable)
+          let repEndUtc = new Date(repStartUtc.getTime() + 60 * 60 * 1000); 
+          if (repEndUtc > startUtc) {
+             repEndUtc = new Date(startUtc.getTime()); // Evitar que solape con el despegue en el calendario
+          }
           
           const repEventDate = new Date(repStartUtc);
           const repDay = repEventDate.getUTCDate();
@@ -974,15 +1004,18 @@ class ParserEngine {
         let startUtc, endUtc;
 
         if (isAllDay) {
-          startUtc = new Date(Date.UTC(currentYear, currentMonth, targetDay, 0, 0, 0));
-          endUtc = new Date(Date.UTC(currentYear, currentMonth, targetDay, 23, 59, 59));
+          startUtc = new Date(Date.UTC(activeYear, activeMonth, targetDay, 0, 0, 0));
+          endUtc = new Date(Date.UTC(activeYear, activeMonth, targetDay, 23, 59, 59));
         } else {
-          startUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, targetDay, startTime, origin);
-          endUtc = ParserEngine.parseToUtcDate(currentYear, currentMonth, targetDay, endTime, dest || origin);
+          startUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, targetDay, startTime, origin);
+          endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, targetDay, endTime, dest || origin);
           if (codeMeta.category === 'layover' || endUtc < startUtc) {
             endUtc.setUTCDate(endUtc.getUTCDate() + 1);
           }
         }
+
+        // Determinar el mes y año normalizados visualmente para el dateStr
+        const visualNormDate = new Date(activeYear, activeMonth, targetDay);
 
         const event = {
           id: `ek-duty-${Date.now()}-${i}-${dOffset}-${Math.random().toString(36).substr(2, 4)}`,
@@ -991,9 +1024,9 @@ class ParserEngine {
           emoji: codeMeta.emoji,
           rawTitle: codeMeta.title,
           day: targetDay,
-          month: currentMonth,
-          year: currentYear,
-          dateStr: `${String(targetDay).padStart(2, '0')} ${Object.keys(monthNames)[currentMonth]}`,
+          month: activeMonth,
+          year: activeYear,
+          dateStr: `${String(visualNormDate.getDate()).padStart(2, '0')} ${Object.keys(monthNames)[visualNormDate.getMonth()]}`,
           origin: origin,
           destination: dest,
           locationCode: locCode,
