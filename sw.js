@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rostercal-v1';
+const CACHE_NAME = 'rostercal-v1.1';
 
 // Lista de todos los archivos necesarios para funcionar offline
 const ASSETS = [
