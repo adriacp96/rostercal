@@ -521,16 +521,15 @@ class ParserEngine {
         );
 
         if (shouldAddReport) {
-          let repStartUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
+          // El Rep. time marca el final de la ventana de check-in (cierre del eGate)
+          let repEndUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
 
-          if (repStartUtc >= startUtc) {
-            repStartUtc.setUTCDate(repStartUtc.getUTCDate() - 1);
+          if (repEndUtc >= startUtc) {
+            repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
           }
 
-          let repEndUtc = new Date(repStartUtc.getTime() + 60 * 60 * 1000); 
-          if (repEndUtc > startUtc) {
-             repEndUtc = new Date(startUtc.getTime()); 
-          }
+          // La ventana de reporte inicia exactamente 1 hora antes del Rep. time
+          let repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000); 
           
           const repEventDate = new Date(repStartUtc);
           const repDay = repEventDate.getUTCDate();
@@ -544,8 +543,9 @@ class ParserEngine {
             minute: '2-digit',
             hour12: false
           });
+          
           const repStartTimeStr = repFormatter.format(repStartUtc).replace(':', '');
-          const repEndTimeStr = repTime;
+          const repEndTimeStr = repFormatter.format(repEndUtc).replace(':', '');
 
           const reportEvent = {
             id: `ek-rep-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
@@ -566,7 +566,7 @@ class ParserEngine {
             isAllDay: false,
             startUtc: repStartUtc,
             endUtc: repEndUtc,
-            rawText: `Check-in Report ${repTime} for ${flightNum}`
+            rawText: `Check-in window: ${repStartTimeStr} to ${repEndTimeStr} for ${flightNum}`
           };
           events.push(reportEvent);
         }
