@@ -1,9 +1,11 @@
-/* 
- * Apple Design typography scale and system fonts[cite: 9]
+/*
+ * Apple Design typography scale, optical sizing & system font stack
  */
 :root {
-  font: 100%/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font: 100%/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::-webkit-scrollbar {
@@ -25,7 +27,6 @@
   background: rgba(100, 116, 139, 1);
 }
 
-/* Hide horizontal scrollbar on category filter pill bar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -38,6 +39,7 @@ body {
   background-color: #030712;
   position: relative;
   overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 body::before, body::after {
@@ -72,28 +74,31 @@ body::after {
   100% { transform: translate(-40px, 50px) scale(0.9); }
 }
 
-/* Response: Kill Latency, Active State on Pointer Down[cite: 9] */
+/* Response: Kill Latency — tactile active state on pointer down */
 button, .btn, a, label {
-  transition: transform 100ms ease-out, background-color 200ms ease, opacity 200ms ease, border-color 200ms ease !important;
+  transition: transform 100ms ease-out, background-color 200ms ease, opacity 200ms ease, border-color 200ms ease, box-shadow 200ms ease !important;
 }
 
-button:active, .btn:active, a:active {
+button:active:not(:disabled), .btn:active:not(:disabled), a:active {
   transform: scale(0.97) !important;
 }
 
-/* Apple Materials & Translucency[cite: 9] */
+/* Apple Materials & Translucency */
 .apple-glass {
-  background: rgba(15, 23, 42, 0.6) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Apple typography tracking adjustments for larger sizes[cite: 9] */
+/* Apple display typography tracking & tabular digits */
 h1, h2, h3, .text-xl, .text-2xl, .text-3xl, .text-4xl, .tracking-tight {
-  letter-spacing: -0.02em !important;
-  line-height: 1.05 !important;
+  letter-spacing: -0.022em !important;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 tr {
@@ -104,7 +109,7 @@ tr:hover {
   background-color: rgba(30, 41, 59, 0.6);
 }
 
-/* Spring-like bezier curve for reversible transitions[cite: 9] */
+/* Spring-like bezier curve for reversible transitions */
 @keyframes dominoCascade {
   0% {
     opacity: 0;
@@ -118,7 +123,7 @@ tr:hover {
 
 .animate-fade-in {
   opacity: 0;
-  animation: dominoCascade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+  animation: dominoCascade 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes emeraldGradientShift {
@@ -170,102 +175,285 @@ tr:hover {
   opacity: 0.3;
 }
 
-/* Aviation Magic Mode Animations */
-@keyframes radar-sweep {
-  0% { transform: rotate(0deg); opacity: 0.1; }
-  50% { opacity: 0.4; }
-  100% { transform: rotate(360deg); opacity: 0.1; }
-}
+/* =========================================================
+   MAGIC MODE: Apple-Design Responsive Aviation Overlay
+   ========================================================= */
 
-.animate-radar-sweep {
-  animation: radar-sweep 4s linear infinite;
-  transform-origin: center center;
-}
-
-@keyframes takeoff {
-  0% { 
-    transform: translate(-120px, 30px) rotate(10deg) scale(0.6); 
-    opacity: 0; 
-  }
-  20% { 
-    opacity: 1; 
-  }
-  80% { 
-    opacity: 1; 
-  }
-  100% { 
-    transform: translate(120px, -40px) rotate(25deg) scale(1.4); 
-    opacity: 0; 
-  }
-}
-
-.animate-takeoff {
-  animation: takeoff 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* Magic Mode Transparent Overlay Classes */
-html.magic-transparent, 
+html.magic-transparent,
 body.magic-transparent {
   background-color: transparent !important;
   background: transparent !important;
 }
 
-body.magic-transparent::before, 
+body.magic-transparent::before,
 body.magic-transparent::after {
-  display: none !important; /* Hides the floating background orbs in overlay mode */
+  display: none !important;
 }
 
-/* Hide header and footer in magic mode to ensure only the overlay is visible */
 body.magic-transparent header,
 body.magic-transparent footer {
   display: none !important;
 }
 
-/* Staggered Elegance for Magic Mode */
-.magic-item {
-  opacity: 0;
-  animation: dominoCascade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Safe-area padding guarantees zero overlap with notch, Dynamic Island, home bar, or floating Close button */
+.magic-overlay-viewport {
+  height: 100vh;
+  height: 100dvh;
+  padding:
+    max(68px, calc(env(safe-area-inset-top) + 56px))
+    max(16px, env(safe-area-inset-right))
+    max(24px, calc(env(safe-area-inset-bottom) + 12px))
+    max(16px, env(safe-area-inset-left));
 }
 
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
-.delay-800 { animation-delay: 800ms; }
-.delay-900 { animation-delay: 900ms; }
-.delay-1000 { animation-delay: 1000ms; }
+/* Outer Frosted Glass Sheet with specular top edge */
+.magic-sheet {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.84) 0%, rgba(7, 12, 24, 0.90) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 28px 70px -16px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(18px) scale(0.965);
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
 
-/* 
- * Accessibility: Reduced Motion[cite: 9] 
- * Use simple opacity transitions instead of springs/transforms.
- */
+#magic-mode-view.magic-ready .magic-sheet {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Staggered Spring Reveal */
+.magic-stagger {
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  transition:
+    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1) var(--stagger-delay, 0ms),
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1) var(--stagger-delay, 0ms);
+}
+
+#magic-mode-view.magic-ready .magic-stagger {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Recessed Flight-Deck Instrument Panel */
+.aviation-instrument {
+  background: linear-gradient(180deg, rgba(3, 8, 20, 0.78) 0%, rgba(10, 20, 42, 0.62) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -16px 32px rgba(2, 132, 199, 0.08);
+}
+
+.aviation-horizon-glow {
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  width: 82%;
+  height: 76px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.22) 0%, rgba(14, 165, 233, 0.06) 55%, transparent 75%);
+  pointer-events: none;
+}
+
+/* Subtle horizontal cockpit scanner shimmer */
+.aviation-radar-beam {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.09) 50%, transparent 100%);
+  width: 45%;
+  transform: translateX(-120%);
+  animation: cockpitScan 5.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes cockpitScan {
+  0% { transform: translateX(-120%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(260%); opacity: 0; }
+}
+
+/* Live Transponder Status LED */
+.aviation-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.65);
+  animation: beaconPulse 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes beaconPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.65); }
+  70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+/* Synchronized Contrail Sweep (normalized pathLength="100") */
+.flight-contrail {
+  stroke-dasharray: 28 100;
+  stroke-dashoffset: 28;
+  animation: contrailGlide 5.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
+@keyframes contrailGlide {
+  0% {
+    stroke-dashoffset: 28;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  88% {
+    opacity: 0.95;
+  }
+  100% {
+    stroke-dashoffset: -100;
+    opacity: 0;
+  }
+}
+
+/* Radar Waypoint Rings */
+.radar-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: waypointRipple 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.radar-ring-delayed {
+  animation-delay: 1.6s;
+}
+
+@keyframes waypointRipple {
+  0% { transform: scale(0.55); opacity: 0.85; }
+  100% { transform: scale(1.95); opacity: 0; }
+}
+
+/* Aircraft Wingtip Strobe */
+.nav-strobe {
+  animation: strobeBlink 1.8s ease-in-out infinite;
+}
+
+@keyframes strobeBlink {
+  0%, 75%, 100% { opacity: 0.35; }
+  82%, 90% { opacity: 1; }
+}
+
+/* Concentric Bento Metric Cards */
+.magic-stat-card {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: background-color 200ms ease, border-color 200ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .magic-stat-card:hover {
+    background: rgba(255, 255, 255, 0.075);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+  }
+}
+
+/* Primary Apple Blue Action Button */
+.magic-primary-btn {
+  background: linear-gradient(180deg, #0a84ff 0%, #0066dc 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 30px -8px rgba(10, 132, 255, 0.55);
+}
+
+.magic-primary-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2191ff 0%, #0a74ed 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 16px 36px -8px rgba(10, 132, 255, 0.68);
+}
+
+.magic-primary-btn.is-exported {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 30px -8px rgba(16, 185, 129, 0.55);
+}
+
+/* Keep review header clear of floating bookmarklet close button */
+body.magic-review-embedded header > div {
+  padding-right: 68px !important;
+}
+
+/* Compact landscape mobile optimization */
+@media (max-height: 540px) and (orientation: landscape) {
+  .magic-overlay-viewport {
+    padding-top: max(56px, calc(env(safe-area-inset-top) + 48px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .magic-sheet {
+    padding: 16px 20px;
+  }
+}
+
+/* Accessibility: Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in, .magic-item {
+  .animate-fade-in,
+  .magic-sheet,
+  .magic-stagger {
     animation: none !important;
     transition: opacity 200ms ease !important;
     transform: none !important;
-    opacity: 1 !important;
   }
-  body::before, body::after, .animate-radar-sweep, .animate-takeoff {
+  #magic-mode-view.magic-ready .magic-sheet,
+  #magic-mode-view.magic-ready .magic-stagger {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  body::before,
+  body::after,
+  .aviation-radar-beam,
+  .aviation-beacon,
+  .flight-contrail,
+  .radar-ring,
+  .nav-strobe {
     animation: none !important;
+  }
+  .aviation-radar-beam {
     display: none !important;
+  }
+  .flight-contrail {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 0.7;
+  }
+  .flight-aircraft {
+    display: none;
   }
   button:active, .btn:active, a:active {
     transform: none !important;
   }
 }
 
-/* 
- * Accessibility: Reduced Transparency[cite: 9]
- * Convert glass layers to solid colors.
- */
+/* Accessibility: Reduced Transparency */
 @media (prefers-reduced-transparency: reduce) {
-  .apple-glass, header, .backdrop-blur-md, .backdrop-blur-sm, .backdrop-blur-xl {
-    background: #0f172a !important;
+  .apple-glass,
+  .magic-sheet,
+  header,
+  .backdrop-blur-md,
+  .backdrop-blur-sm,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl {
+    background: #0b1120 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+  .magic-stat-card {
+    background: #131c31 !important;
+    border-color: #26334d !important;
   }
 }
