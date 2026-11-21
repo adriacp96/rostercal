@@ -176,7 +176,9 @@ tr:hover {
 }
 
 /* =========================================================
-   MAGIC MODE: Apple-Design Responsive Aviation Overlay
+   MAGIC MODE: Universal Responsive Aviation Overlay
+   Supports: iPhone / Pro, Foldable (Closed & Open), iPad,
+             MacBook & Desktop — Portrait and Landscape
    ========================================================= */
 
 html.magic-transparent,
@@ -195,20 +197,25 @@ body.magic-transparent footer {
   display: none !important;
 }
 
-/* Safe-area padding guarantees zero overlap with notch, Dynamic Island, home bar, or floating Close button */
+/* Dynamic viewport + safe-area insets (notch, Dynamic Island, home indicator, floating Close button) */
 .magic-overlay-viewport {
   height: 100vh;
   height: 100dvh;
   padding:
-    max(68px, calc(env(safe-area-inset-top) + 56px))
-    max(16px, env(safe-area-inset-right))
-    max(24px, calc(env(safe-area-inset-bottom) + 12px))
-    max(16px, env(safe-area-inset-left));
+    max(66px, calc(env(safe-area-inset-top) + 54px))
+    max(14px, env(safe-area-inset-right))
+    max(18px, calc(env(safe-area-inset-bottom) + 12px))
+    max(14px, env(safe-area-inset-left));
 }
 
-/* Outer Frosted Glass Sheet with specular top edge */
+/* Concentric Apple Frosted Sheet with Container Queries */
 .magic-sheet {
-  background: linear-gradient(165deg, rgba(15, 23, 42, 0.84) 0%, rgba(7, 12, 24, 0.90) 100%);
+  width: 100%;
+  max-width: min(680px, 100%);
+  container-type: inline-size;
+  border-radius: clamp(24px, 4vw, 32px);
+  padding: clamp(14px, 2.8vw, 28px);
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.85) 0%, rgba(7, 12, 24, 0.91) 100%);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -241,13 +248,34 @@ body.magic-transparent footer {
   transform: translateY(0) scale(1);
 }
 
+/* Default Vertical Flow (Portrait phones, Foldables open/closed portrait, iPad portrait, tall MacBook) */
+.magic-body-grid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2.2dvh, 20px);
+}
+
+.magic-col-hero,
+.magic-col-data {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2dvh, 18px);
+  min-width: 0;
+}
+
 /* Recessed Flight-Deck Instrument Panel */
 .aviation-instrument {
+  border-radius: clamp(16px, 2.6vw, 20px);
+  padding: clamp(10px, 2vw, 16px);
   background: linear-gradient(180deg, rgba(3, 8, 20, 0.78) 0%, rgba(10, 20, 42, 0.62) 100%);
   border: 1px solid rgba(148, 163, 184, 0.16);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -16px 32px rgba(2, 132, 199, 0.08);
+}
+
+.magic-flight-svg {
+  height: clamp(68px, 12.5dvh, 108px);
 }
 
 .aviation-horizon-glow {
@@ -261,7 +289,6 @@ body.magic-transparent footer {
   pointer-events: none;
 }
 
-/* Subtle horizontal cockpit scanner shimmer */
 .aviation-radar-beam {
   position: absolute;
   inset: 0;
@@ -279,7 +306,6 @@ body.magic-transparent footer {
   100% { transform: translateX(260%); opacity: 0; }
 }
 
-/* Live Transponder Status LED */
 .aviation-beacon {
   width: 7px;
   height: 7px;
@@ -295,7 +321,6 @@ body.magic-transparent footer {
   100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
 }
 
-/* Synchronized Contrail Sweep (normalized pathLength="100") */
 .flight-contrail {
   stroke-dasharray: 28 100;
   stroke-dashoffset: 28;
@@ -303,23 +328,12 @@ body.magic-transparent footer {
 }
 
 @keyframes contrailGlide {
-  0% {
-    stroke-dashoffset: 28;
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.95;
-  }
-  88% {
-    opacity: 0.95;
-  }
-  100% {
-    stroke-dashoffset: -100;
-    opacity: 0;
-  }
+  0% { stroke-dashoffset: 28; opacity: 0; }
+  10% { opacity: 0.95; }
+  88% { opacity: 0.95; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
 }
 
-/* Radar Waypoint Rings */
 .radar-ring {
   transform-box: fill-box;
   transform-origin: center;
@@ -335,7 +349,6 @@ body.magic-transparent footer {
   100% { transform: scale(1.95); opacity: 0; }
 }
 
-/* Aircraft Wingtip Strobe */
 .nav-strobe {
   animation: strobeBlink 1.8s ease-in-out infinite;
 }
@@ -345,12 +358,66 @@ body.magic-transparent footer {
   82%, 90% { opacity: 1; }
 }
 
-/* Concentric Bento Metric Cards */
+/* Title & Subtitle */
+.magic-title-block {
+  text-align: center;
+}
+
+.magic-heading {
+  font-size: clamp(1.3rem, 3.6vw, 1.75rem);
+  line-height: 1.1;
+}
+
+.magic-subtitle {
+  font-size: clamp(0.75rem, 1.9vw, 0.84rem);
+  line-height: 1.4;
+}
+
+/* Adaptive Bento Metrics Grid (Container-Query Driven) */
+.magic-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 1.6vw, 12px);
+}
+
+@container (min-width: 470px) {
+  .magic-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .magic-stat-card {
+  border-radius: clamp(14px, 2.4vw, 18px);
+  padding: clamp(10px, 1.8vw, 14px) clamp(11px, 2vw, 15px);
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.085);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  min-width: 0;
   transition: background-color 200ms ease, border-color 200ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.magic-stat-label {
+  font-size: clamp(0.62rem, 1.5vw, 0.69rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.magic-stat-emoji {
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.magic-stat-value {
+  font-size: clamp(1.35rem, 3.8vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 
 @media (hover: hover) {
@@ -361,8 +428,18 @@ body.magic-transparent footer {
   }
 }
 
-/* Primary Apple Blue Action Button */
+/* Actions Area */
+.magic-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .magic-primary-btn {
+  min-height: clamp(46px, 6.5dvh, 54px);
+  border-radius: clamp(14px, 2vw, 16px);
+  padding: 10px 20px;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
   background: linear-gradient(180deg, #0a84ff 0%, #0066dc 100%);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
@@ -384,20 +461,159 @@ body.magic-transparent footer {
     0 12px 30px -8px rgba(16, 185, 129, 0.55);
 }
 
+.magic-secondary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.magic-review-btn {
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 0.78rem;
+}
+
+.magic-privacy-tag {
+  font-size: 0.7rem;
+}
+
+/* =========================================================
+   BREAKPOINT 1: Narrow Cover Screens (Foldable Closed / Small iPhone <= 375px)
+   ========================================================= */
+@media (max-width: 375px) {
+  .magic-overlay-viewport {
+    padding:
+      max(62px, calc(env(safe-area-inset-top) + 52px))
+      max(10px, env(safe-area-inset-right))
+      max(14px, calc(env(safe-area-inset-bottom) + 10px))
+      max(10px, env(safe-area-inset-left));
+  }
+  .magic-route-pill {
+    max-width: 130px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .magic-secondary-bar {
+    justify-content: center;
+  }
+  .magic-privacy-tag {
+    display: none;
+  }
+}
+
+/* =========================================================
+   BREAKPOINT 2: Foldable Open (Square Inner Display) & iPad Portrait
+   ========================================================= */
+@media (min-width: 640px) and (min-height: 681px) {
+  .magic-sheet {
+    max-width: min(720px, 100%);
+  }
+}
+
+/* =========================================================
+   BREAKPOINT 3: Landscape Split Cockpit Mode
+   (iPhone/Pro Landscape, Foldable Landscape, Split-View iPad, short MacBook windows)
+   ========================================================= */
+@media (orientation: landscape) and (max-height: 680px) and (min-width: 560px) {
+  .magic-overlay-viewport {
+    /* Shift close-button clearance from top to right so short landscape screens use full vertical height */
+    padding:
+      max(14px, env(safe-area-inset-top))
+      max(68px, calc(env(safe-area-inset-right) + 56px))
+      max(14px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left));
+  }
+
+  .magic-sheet {
+    max-width: min(940px, 100%);
+    padding: clamp(14px, 2.8dvh, 22px) clamp(16px, 2.5vw, 26px);
+    border-radius: 24px;
+  }
+
+  .magic-body-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+    gap: clamp(14px, 2.4vw, 24px);
+    align-items: stretch;
+  }
+
+  .magic-col-hero {
+    justify-content: space-between;
+    gap: clamp(8px, 1.8dvh, 14px);
+  }
+
+  .magic-col-data {
+    justify-content: space-between;
+    gap: clamp(10px, 2dvh, 16px);
+  }
+
+  .magic-flight-svg {
+    height: clamp(54px, 18dvh, 96px);
+  }
+
+  .magic-title-block {
+    text-align: left;
+  }
+
+  .magic-heading {
+    font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+  }
+
+  .magic-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(7px, 1.2vw, 10px);
+  }
+
+  .magic-stat-card {
+    padding: clamp(8px, 1.5dvh, 12px) clamp(9px, 1.4vw, 13px);
+    border-radius: 14px;
+  }
+
+  .magic-stat-value {
+    font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+  }
+
+  .magic-primary-btn {
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .magic-secondary-bar {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Ultra-short Landscape (e.g., iPhone / iPhone Pro Landscape with Safari toolbars <= 430px height) */
+@media (orientation: landscape) and (max-height: 430px) and (min-width: 560px) {
+  .magic-overlay-viewport {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .magic-sheet {
+    padding: 12px 16px;
+    border-radius: 20px;
+  }
+  .aviation-instrument {
+    padding: 8px 10px;
+    border-radius: 14px;
+  }
+  .magic-flight-svg {
+    height: 52px;
+  }
+  .magic-subtitle {
+    display: none;
+  }
+  .magic-review-btn {
+    min-height: 36px;
+  }
+}
+
 /* Keep review header clear of floating bookmarklet close button */
 body.magic-review-embedded header > div {
   padding-right: 68px !important;
-}
-
-/* Compact landscape mobile optimization */
-@media (max-height: 540px) and (orientation: landscape) {
-  .magic-overlay-viewport {
-    padding-top: max(56px, calc(env(safe-area-inset-top) + 48px));
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-  .magic-sheet {
-    padding: 16px 20px;
-  }
 }
 
 /* Accessibility: Reduced Motion */
