@@ -135,7 +135,7 @@
           <div class="space-y-2.5 pt-2.5 shrink-0">
             <div class="flex items-center gap-2">
               <button id="btn-parse" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-3 rounded-xl shadow-lg shadow-blue-900/30 flex justify-center items-center space-x-2 cursor-pointer text-xs tracking-tight uppercase btn">
-                <span>Parse & Preview Roster</span>
+                <span>Parse &amp; Preview Roster</span>
               </button>
               <button id="btn-clear-box" type="button" title="Clear text box"
                 class="h-[34px] bg-red-600/90 hover:bg-red-500 text-white font-semibold px-2.5 rounded-xl shadow-lg shadow-red-950/30 flex items-center justify-center cursor-pointer text-xs uppercase tracking-tight btn">
@@ -162,7 +162,7 @@
           <div class="flex flex-col flex-grow min-h-0">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5 border-b border-slate-700/80 pb-2.5 shrink-0">
               <div>
-                <h2 class="text-xs font-bold uppercase text-slate-200 tracking-tight">2. Review & Edit Schedule</h2>
+                <h2 class="text-xs font-bold uppercase text-slate-200 tracking-tight">2. Review &amp; Edit Schedule</h2>
                 <p id="event-count" class="text-[10px] text-slate-400 mt-0.5">0 events ready for calendar sync</p>
               </div>
 
@@ -251,186 +251,190 @@
 
     </div>
 
-    <!-- MAGIC MODE: Apple-Design Aviation Overlay -->
+    <!-- MAGIC MODE: Adaptive Apple-Design Aviation Overlay (iPhone, Foldable Closed/Open, iPad, MacBook — Portrait & Landscape) -->
     <section id="magic-mode-view" aria-label="Roster Summary" class="hidden fixed inset-0 z-[100] bg-transparent flex-col items-center overflow-y-auto overscroll-contain magic-overlay-viewport">
-      <div class="magic-sheet w-full max-w-[660px] my-auto rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 md:p-7 relative overflow-hidden">
+      <div class="magic-sheet my-auto relative overflow-hidden">
+        <div class="magic-body-grid">
 
-        <!-- Top Status Bar -->
-        <div class="flex items-center justify-between gap-3 mb-4 magic-stagger" style="--stagger-delay: 40ms;">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.1]">
-            <span class="aviation-beacon" aria-hidden="true"></span>
-            <span id="magic-status-label" class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-sky-200/90">Flight Deck Sync</span>
+          <!-- Left / Top Column: Status, Aviation Telemetry Instrument & Title -->
+          <div class="magic-col-hero">
+            <div class="magic-status-bar flex items-center justify-between gap-2 magic-stagger" style="--stagger-delay: 40ms;">
+              <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] shrink-0">
+                <span class="aviation-beacon" aria-hidden="true"></span>
+                <span id="magic-status-label" class="text-[10px] font-semibold uppercase tracking-[0.08em] text-sky-200/90">Flight Deck Sync</span>
+              </div>
+              <div id="magic-month-title" class="text-[11px] font-semibold text-slate-300/90 tracking-tight truncate text-right min-w-0">
+                Acquiring Roster…
+              </div>
+            </div>
+
+            <!-- Realistic Aviation Flight-Path Telemetry Hero -->
+            <div class="aviation-instrument relative overflow-hidden magic-stagger" style="--stagger-delay: 80ms;">
+              <div class="aviation-horizon-glow" aria-hidden="true"></div>
+              <div class="aviation-radar-beam" aria-hidden="true"></div>
+
+              <svg class="magic-flight-svg w-full block overflow-visible relative z-10" viewBox="0 0 400 106" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flight route animation">
+                <defs>
+                  <linearGradient id="flightTrailGrad" x1="36" y1="78" x2="364" y2="78" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.05" />
+                    <stop offset="55%" stop-color="#38bdf8" stop-opacity="0.85" />
+                    <stop offset="100%" stop-color="#e0f2fe" stop-opacity="1" />
+                  </linearGradient>
+                  <linearGradient id="horizonArcGrad" x1="12" y1="88" x2="388" y2="88" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0" />
+                    <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.32" />
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+                  </linearGradient>
+                  <filter id="jetGlow" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="2.4" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+
+                <!-- Subtle Earth curvature horizon & instrument ticks -->
+                <path d="M 10 92 Q 200 72 390 92" stroke="url(#horizonArcGrad)" stroke-width="1" />
+                <g stroke="rgba(148,163,184,0.22)" stroke-width="1">
+                  <line x1="100" y1="81" x2="100" y2="86" />
+                  <line x1="150" y1="78" x2="150" y2="83" />
+                  <line x1="200" y1="76" x2="200" y2="83" />
+                  <line x1="250" y1="78" x2="250" y2="83" />
+                  <line x1="300" y1="81" x2="300" y2="86" />
+                </g>
+
+                <!-- Origin (DXB) Radar Rings -->
+                <circle cx="36" cy="78" r="10" class="radar-ring" stroke="rgba(56,189,248,0.45)" stroke-width="1" />
+                <circle cx="36" cy="78" r="3.5" fill="#38bdf8" />
+                <circle cx="36" cy="78" r="7" fill="#38bdf8" fill-opacity="0.16" />
+
+                <!-- Destination Radar Rings -->
+                <circle cx="364" cy="78" r="10" class="radar-ring radar-ring-delayed" stroke="rgba(52,211,153,0.45)" stroke-width="1" />
+                <circle cx="364" cy="78" r="3.5" fill="#34d399" />
+                <circle cx="364" cy="78" r="7" fill="#34d399" fill-opacity="0.16" />
+
+                <!-- Geodesic Flight Plan Dashed Track -->
+                <path id="flight-arc-track" d="M 36 78 Q 200 4 364 78" stroke="rgba(148,163,184,0.24)" stroke-width="1.5" stroke-dasharray="3.5 5" stroke-linecap="round" />
+
+                <!-- Animated Luminous Contrail -->
+                <path class="flight-contrail" pathLength="100" d="M 36 78 Q 200 4 364 78" stroke="url(#flightTrailGrad)" stroke-width="2" stroke-linecap="round" />
+
+                <!-- Realistic Widebody Aircraft gliding & banking along the curved flight arc -->
+                <g class="flight-aircraft" filter="url(#jetGlow)">
+                  <animateMotion dur="5.4s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.37 0 0.63 1">
+                    <mpath href="#flight-arc-track" />
+                  </animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.08;0.5;0.9;1" dur="5.4s" repeatCount="indefinite" />
+                  <path d="M 11 0 C 9.2 -1.05 5.4 -1.3 1.4 -1.3 L -4.2 -9.8 L -6.3 -9.8 L -3.2 -1.3 L -8.6 -1.1 L -10.8 -4.4 L -12.1 -4.4 L -10.9 0 L -12.1 4.4 L -10.8 4.4 L -8.6 1.1 L -3.2 1.3 L -6.3 9.8 L -4.2 9.8 L 1.4 1.3 C 5.4 1.3 9.2 1.05 11 0 Z" fill="#f8fafc" />
+                  <circle cx="-4.8" cy="-9.2" r="1.15" fill="#38bdf8" class="nav-strobe" />
+                  <circle cx="-4.8" cy="9.2" r="1.15" fill="#34d399" class="nav-strobe" />
+                </g>
+              </svg>
+
+              <!-- Waypoint Telemetry Footer -->
+              <div class="magic-waypoint-bar flex items-center justify-between gap-2 pt-1.5 relative z-10 border-t border-white/[0.06]">
+                <div class="text-left min-w-0 shrink-0">
+                  <div id="magic-origin-code" class="text-xs font-bold text-white tracking-tight tabular-nums">DXB</div>
+                  <div id="magic-origin-city" class="text-[10px] text-slate-400 truncate">Dubai Base</div>
+                </div>
+
+                <div id="magic-route-summary" class="magic-route-pill text-[10px] font-medium text-sky-300/90 bg-sky-500/10 border border-sky-400/20 px-2.5 py-0.5 rounded-full truncate min-w-0">
+                  Emirates Crew Roster
+                </div>
+
+                <div class="text-right min-w-0 shrink-0">
+                  <div id="magic-dest-code" class="text-xs font-bold text-emerald-300 tracking-tight tabular-nums">INTL</div>
+                  <div id="magic-dest-city" class="text-[10px] text-slate-400 truncate">Global Network</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Grounded Subtitle -->
+            <div class="magic-title-block magic-stagger" style="--stagger-delay: 120ms;">
+              <h2 class="magic-heading font-bold text-white tracking-tight">Schedule Cleared</h2>
+              <p id="magic-subtitle" class="magic-subtitle text-slate-300/80 mt-1">
+                Flights, ground rest &amp; eGate check-ins ready for your calendar.
+              </p>
+            </div>
           </div>
-          <div id="magic-month-title" class="text-[11px] sm:text-xs font-semibold text-slate-300/90 tracking-tight truncate">
-            Acquiring Roster…
+
+          <!-- Right / Bottom Column: Adaptive Bento Grid & Primary Actions -->
+          <div class="magic-col-data">
+            <div class="magic-stats-grid" aria-live="polite">
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 160ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Sectors</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">🛫</span>
+                </div>
+                <div id="stat-flights" class="magic-stat-value text-blue-400 tabular-nums">0</div>
+              </div>
+
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 200ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Block Hrs</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">⏱️</span>
+                </div>
+                <div id="stat-hours" class="magic-stat-value text-violet-400 tabular-nums">0h</div>
+              </div>
+
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 240ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Layovers</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">🏨</span>
+                </div>
+                <div id="stat-layovers" class="magic-stat-value text-amber-400 tabular-nums">0</div>
+              </div>
+
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 280ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Turns</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">🔄</span>
+                </div>
+                <div id="stat-turnarounds" class="magic-stat-value text-sky-400 tabular-nums">0</div>
+              </div>
+
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 320ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Days Off</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">🏖️</span>
+                </div>
+                <div id="stat-off" class="magic-stat-value text-emerald-400 tabular-nums">0</div>
+              </div>
+
+              <div class="magic-stat-card magic-stagger" style="--stagger-delay: 360ms;">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="magic-stat-label">Events</span>
+                  <span class="magic-stat-emoji" aria-hidden="true">📅</span>
+                </div>
+                <div id="stat-events" class="magic-stat-value text-rose-400 tabular-nums">0</div>
+              </div>
+            </div>
+
+            <!-- Primary CTA + Secondary Actions -->
+            <div class="magic-actions magic-stagger" style="--stagger-delay: 400ms;">
+              <button id="magic-btn-export" type="button" disabled class="magic-primary-btn w-full text-white font-semibold tracking-tight flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed btn">
+                <svg id="magic-export-icon" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3v12" />
+                  <path d="m7 11 5 5 5-5" />
+                  <path d="M5 20h14" />
+                </svg>
+                <span id="magic-export-label">Download .ics Calendar</span>
+              </button>
+
+              <div class="magic-secondary-bar">
+                <button id="magic-btn-review" type="button" class="magic-review-btn font-medium text-slate-300/85 hover:text-white transition cursor-pointer bg-transparent border-none btn">
+                  Review &amp; customise events →
+                </button>
+                <span class="magic-privacy-tag text-slate-400/75 flex items-center gap-1.5 select-none">
+                  <span aria-hidden="true">🔒</span>
+                  <span>100% Client-Side</span>
+                </span>
+              </div>
+            </div>
           </div>
+
         </div>
-
-        <!-- Realistic Aviation Flight-Path Telemetry Hero -->
-        <div class="aviation-instrument rounded-[20px] p-3.5 sm:p-4 mb-4 sm:mb-5 relative overflow-hidden magic-stagger" style="--stagger-delay: 80ms;">
-          <div class="aviation-horizon-glow" aria-hidden="true"></div>
-          <div class="aviation-radar-beam" aria-hidden="true"></div>
-
-          <svg class="w-full h-[86px] sm:h-[104px] block overflow-visible relative z-10" viewBox="0 0 400 106" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flight route animation">
-            <defs>
-              <linearGradient id="flightTrailGrad" x1="36" y1="78" x2="364" y2="78" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.05" />
-                <stop offset="55%" stop-color="#38bdf8" stop-opacity="0.85" />
-                <stop offset="100%" stop-color="#e0f2fe" stop-opacity="1" />
-              </linearGradient>
-              <linearGradient id="horizonArcGrad" x1="12" y1="88" x2="388" y2="88" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0" />
-                <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.32" />
-                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
-              </linearGradient>
-              <filter id="jetGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="2.4" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            <!-- Subtle Earth curvature horizon & instrument ticks -->
-            <path d="M 10 92 Q 200 72 390 92" stroke="url(#horizonArcGrad)" stroke-width="1" />
-            <g stroke="rgba(148,163,184,0.22)" stroke-width="1">
-              <line x1="100" y1="81" x2="100" y2="86" />
-              <line x1="150" y1="78" x2="150" y2="83" />
-              <line x1="200" y1="76" x2="200" y2="83" />
-              <line x1="250" y1="78" x2="250" y2="83" />
-              <line x1="300" y1="81" x2="300" y2="86" />
-            </g>
-
-            <!-- Origin (DXB) Radar Rings -->
-            <circle cx="36" cy="78" r="10" class="radar-ring" stroke="rgba(56,189,248,0.45)" stroke-width="1" />
-            <circle cx="36" cy="78" r="3.5" fill="#38bdf8" />
-            <circle cx="36" cy="78" r="7" fill="#38bdf8" fill-opacity="0.16" />
-
-            <!-- Destination Radar Rings -->
-            <circle cx="364" cy="78" r="10" class="radar-ring radar-ring-delayed" stroke="rgba(52,211,153,0.45)" stroke-width="1" />
-            <circle cx="364" cy="78" r="3.5" fill="#34d399" />
-            <circle cx="364" cy="78" r="7" fill="#34d399" fill-opacity="0.16" />
-
-            <!-- Geodesic Flight Plan Dashed Track -->
-            <path id="flight-arc-track" d="M 36 78 Q 200 4 364 78" stroke="rgba(148,163,184,0.24)" stroke-width="1.5" stroke-dasharray="3.5 5" stroke-linecap="round" />
-
-            <!-- Animated Luminous Contrail -->
-            <path class="flight-contrail" pathLength="100" d="M 36 78 Q 200 4 364 78" stroke="url(#flightTrailGrad)" stroke-width="2" stroke-linecap="round" />
-
-            <!-- Realistic Widebody Aircraft gliding & banking along the curved flight arc -->
-            <g class="flight-aircraft" filter="url(#jetGlow)">
-              <animateMotion dur="5.4s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.37 0 0.63 1">
-                <mpath href="#flight-arc-track" />
-              </animateMotion>
-              <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.08;0.5;0.9;1" dur="5.4s" repeatCount="indefinite" />
-              <!-- Sleek commercial jet silhouette centered at (0,0), nose pointing +X -->
-              <path d="M 11 0 C 9.2 -1.05 5.4 -1.3 1.4 -1.3 L -4.2 -9.8 L -6.3 -9.8 L -3.2 -1.3 L -8.6 -1.1 L -10.8 -4.4 L -12.1 -4.4 L -10.9 0 L -12.1 4.4 L -10.8 4.4 L -8.6 1.1 L -3.2 1.3 L -6.3 9.8 L -4.2 9.8 L 1.4 1.3 C 5.4 1.3 9.2 1.05 11 0 Z" fill="#f8fafc" />
-              <!-- Subtle wingtip navigation strobe -->
-              <circle cx="-4.8" cy="-9.2" r="1.15" fill="#38bdf8" class="nav-strobe" />
-              <circle cx="-4.8" cy="9.2" r="1.15" fill="#34d399" class="nav-strobe" />
-            </g>
-          </svg>
-
-          <!-- Waypoint Telemetry Footer -->
-          <div class="flex items-center justify-between gap-2 pt-1 relative z-10 border-t border-white/[0.06]">
-            <div class="text-left min-w-0">
-              <div id="magic-origin-code" class="text-xs sm:text-sm font-bold text-white tracking-tight tabular-nums">DXB</div>
-              <div id="magic-origin-city" class="text-[10px] text-slate-400 truncate">Dubai Base</div>
-            </div>
-
-            <div id="magic-route-summary" class="text-[10px] sm:text-[11px] font-medium text-sky-300/90 bg-sky-500/10 border border-sky-400/20 px-2.5 py-0.5 rounded-full truncate">
-              Emirates Crew Roster
-            </div>
-
-            <div class="text-right min-w-0">
-              <div id="magic-dest-code" class="text-xs sm:text-sm font-bold text-emerald-300 tracking-tight tabular-nums">INTL</div>
-              <div id="magic-dest-city" class="text-[10px] text-slate-400 truncate">Global Network</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Title & Grounded Subtitle -->
-        <div class="text-center mb-4 sm:mb-5 magic-stagger" style="--stagger-delay: 120ms;">
-          <h2 class="text-[22px] sm:text-[28px] font-bold text-white tracking-tight leading-tight">Schedule Cleared</h2>
-          <p id="magic-subtitle" class="text-xs sm:text-[13px] text-slate-300/80 mt-1">
-            Flights, ground rest &amp; eGate check-ins ready for your calendar.
-          </p>
-        </div>
-
-        <!-- Apple Bento Metrics Grid (2x3 Mobile, 3x2 Tablet/Desktop) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-5 sm:mb-6" aria-live="polite">
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 160ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Sectors</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">🛫</span>
-            </div>
-            <div id="stat-flights" class="text-2xl sm:text-[28px] font-bold text-blue-400 tabular-nums leading-none tracking-tight">0</div>
-          </div>
-
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 200ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Block Hrs</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">⏱️</span>
-            </div>
-            <div id="stat-hours" class="text-2xl sm:text-[28px] font-bold text-violet-400 tabular-nums leading-none tracking-tight">0h</div>
-          </div>
-
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 240ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Layovers</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">🏨</span>
-            </div>
-            <div id="stat-layovers" class="text-2xl sm:text-[28px] font-bold text-amber-400 tabular-nums leading-none tracking-tight">0</div>
-          </div>
-
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 280ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Turns</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">🔄</span>
-            </div>
-            <div id="stat-turnarounds" class="text-2xl sm:text-[28px] font-bold text-sky-400 tabular-nums leading-none tracking-tight">0</div>
-          </div>
-
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 320ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Days Off</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">🏖️</span>
-            </div>
-            <div id="stat-off" class="text-2xl sm:text-[28px] font-bold text-emerald-400 tabular-nums leading-none tracking-tight">0</div>
-          </div>
-
-          <div class="magic-stat-card rounded-[18px] p-3 sm:p-3.5 magic-stagger" style="--stagger-delay: 360ms;">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-400">Events</span>
-              <span class="text-sm sm:text-base leading-none" aria-hidden="true">📅</span>
-            </div>
-            <div id="stat-events" class="text-2xl sm:text-[28px] font-bold text-rose-400 tabular-nums leading-none tracking-tight">0</div>
-          </div>
-        </div>
-
-        <!-- Primary CTA + Secondary Actions -->
-        <div class="space-y-2.5 magic-stagger" style="--stagger-delay: 400ms;">
-          <button id="magic-btn-export" type="button" disabled class="magic-primary-btn w-full min-h-[52px] sm:min-h-[54px] rounded-[16px] px-5 text-white font-semibold text-sm sm:text-[15px] tracking-tight flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed btn">
-            <svg id="magic-export-icon" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3v12" />
-              <path d="m7 11 5 5 5-5" />
-              <path d="M5 20h14" />
-            </svg>
-            <span id="magic-export-label">Download .ics Calendar</span>
-          </button>
-
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-1 pt-1">
-            <button id="magic-btn-review" type="button" class="min-h-[44px] px-2 text-xs font-medium text-slate-300/80 hover:text-white transition cursor-pointer bg-transparent border-none btn">
-              Review &amp; customise events →
-            </button>
-            <span class="text-[11px] text-slate-400/75 flex items-center gap-1.5 select-none">
-              <span aria-hidden="true">🔒</span>
-              <span>100% Client-Side</span>
-            </span>
-          </div>
-        </div>
-
       </div>
     </section>
 
