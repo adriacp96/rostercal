@@ -9,8 +9,8 @@ import { BUILTIN_AIRPORTS } from './airports.js';
 import { BUILTIN_EVENT_CODES } from './event_codes.js';
 
 // --- Supabase Configuration ---
-const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g"; 
+const SUPABASE_URL = "https://qrwzmbylcgwgteywnjss.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyd3ptYnlsY2d3Z3RleXduanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNjUwMTUsImV4cCI6MjEwMTc0MTAxNX0.Xexca7uxPjvm6orZTecDmfBIyqnpetC_v3b4mtkul9g";
 
 const HOME_BASE = "DXB";
 const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
@@ -27,8 +27,7 @@ class AppState {
     this.currentYear = new Date().getFullYear();
     this.currentMonth = new Date().getMonth();
     this.currentStaffNumber = 'UNKNOWN';
-    
-    // Load saved preferences from LocalStorage
+
     const savedPrefs = localStorage.getItem('rosterCalPrefs');
     this.preferences = savedPrefs ? JSON.parse(savedPrefs) : {
       calendarName: "Emirates Roster",
@@ -38,7 +37,7 @@ class AppState {
       includeFR24: true,
       autoLayovers: true,
       includeLocal: true,
-      alarmReminder: "120" // Defaults to 2 hours
+      alarmReminder: "120"
     };
   }
 
@@ -52,7 +51,6 @@ const state = new AppState();
 class SupabaseLogger {
   static async logCodes(events) {
     if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID") || !SUPABASE_ANON_KEY) {
-      console.log("ℹ️ Supabase credentials not configured. Skipping code collection.");
       return;
     }
 
@@ -63,7 +61,7 @@ class SupabaseLogger {
 
       const code = evt.code.toUpperCase();
       const isKnown = !!(state.eventCodes[code] || BUILTIN_EVENT_CODES[code]);
-      
+
       if (!uniqueCodesMap.has(code)) {
         uniqueCodesMap.set(code, {
           code: code,
@@ -79,7 +77,6 @@ class SupabaseLogger {
 
     try {
       const endpoint = `${SUPABASE_URL}/rest/v1/collected_event_codes`;
-      
       await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -98,9 +95,9 @@ class SupabaseLogger {
   static async logEvents(events) {
     if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID") || !SUPABASE_ANON_KEY) return;
     if (events.length === 0) return;
-    
+
     const sessionId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-    
+
     const payload = events.map(evt => ({
       sync_session_id: sessionId,
       staff_number: state.currentStaffNumber || 'UNKNOWN',
@@ -115,7 +112,6 @@ class SupabaseLogger {
 
     try {
       const endpoint = `${SUPABASE_URL}/rest/v1/roster_events`;
-      
       await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -137,28 +133,28 @@ class Toast {
   static show(message, type = 'error') {
     const containerId = 'rostercal-toast-container';
     let container = document.getElementById(containerId);
-    
+
     if (!container) {
       container = document.createElement('div');
       container.id = containerId;
-      container.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center space-y-2 pointer-events-none';
+      container.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[120] flex flex-col items-center space-y-2 pointer-events-none px-4 w-full max-w-md';
       document.body.appendChild(container);
     }
 
     const toast = document.createElement('div');
     const isError = type === 'error';
-    
+
     toast.className = `flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-2xl border backdrop-blur-md transition-all duration-300 transform translate-y-10 opacity-0 ${
-      isError 
-        ? 'bg-red-950/90 border-red-500/50 text-red-200' 
+      isError
+        ? 'bg-red-950/90 border-red-500/50 text-red-200'
         : 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
     }`;
-    
+
     toast.innerHTML = `
       <span class="text-base">${isError ? '⚠️' : '✅'}</span>
       <span class="text-xs font-bold tracking-tight uppercase">${message}</span>
     `;
-    
+
     container.appendChild(toast);
 
     requestAnimationFrame(() => {
@@ -183,7 +179,7 @@ class FormatEngine {
       const depCity = (state.airports[evt.origin] || BUILTIN_AIRPORTS[evt.origin])?.city || evt.origin;
       const arrCity = (state.airports[evt.destination] || BUILTIN_AIRPORTS[evt.destination])?.city || evt.destination;
       const flight = evt.flightNum;
-      
+
       const startLocal = evt.startTime ? evt.startTime.replace(/(\d{2})(\d{2})/, '$1:$2') + "L" : "--:--L";
       const endLocal = evt.endTime ? evt.endTime.replace(/(\d{2})(\d{2})/, '$1:$2') + "L" : "--:--L";
 
@@ -235,7 +231,7 @@ class FormatEngine {
       lines.push(`✈️ EMIRATES FLIGHT ${evt.flightNum}`);
       lines.push(`----------------------------------`);
       lines.push(`🌐 Route:     ${origCity} (${evt.origin}) ➡️ ${destCity} (${evt.destination})`);
-      
+
       if (state.preferences.includeLocal) {
         const startL = evt.startTime ? evt.startTime.replace(/(\d{2})(\d{2})/, '$1:$2') : '--:--';
         const endL = evt.endTime ? evt.endTime.replace(/(\d{2})(\d{2})/, '$1:$2') : '--:--';
@@ -244,10 +240,10 @@ class FormatEngine {
       }
 
       const showReport = state.preferences.includeReport === true ||
-                        state.preferences.includeReport === 'ALL' || 
+                        state.preferences.includeReport === 'ALL' ||
                         (state.preferences.includeReport === 'HOME_ONLY' && evt.origin === HOME_BASE) ||
                         (state.preferences.includeReport === undefined && evt.origin === HOME_BASE);
-      
+
       if (showReport && evt.repTime) {
         const formatRep = evt.repTime.replace(/(\d{2})(\d{2})/, '$1:$2');
         lines.push(`🕒 Check-in:  ${formatRep} Local (${evt.origin})`);
@@ -273,7 +269,7 @@ class FormatEngine {
       lines.push(`⏰ Report:   ${startL} Local Time`);
       lines.push(`----------------------------------`);
       lines.push(`ℹ️ Note: eGate briefing and check-in window remains open for exactly 1 hour prior to gate departure.`);
-      
+
       if (state.preferences.includeFR24 && evt.flightNum) {
         const fr24Code = evt.flightNum.toLowerCase().replace(/[^a-z0-9]/g, '');
         lines.push(`----------------------------------`);
@@ -284,7 +280,7 @@ class FormatEngine {
       const loc = evt.locationCode || evt.origin || HOME_BASE;
       const layMeta = state.airports[loc] || BUILTIN_AIRPORTS[loc];
       const city = layMeta?.city || loc;
-      
+
       lines.push(`🏨 STATION REST & LAYOVER`);
       lines.push(`----------------------------------`);
       lines.push(`📍 Location: ${city} (${loc})`);
@@ -300,7 +296,7 @@ class FormatEngine {
       const loc = evt.locationCode || evt.origin || HOME_BASE;
       const turnMeta = state.airports[loc] || BUILTIN_AIRPORTS[loc];
       const city = turnMeta?.city || loc;
-      
+
       lines.push(`🔄 AIRCRAFT TURNAROUND`);
       lines.push(`----------------------------------`);
       lines.push(`📍 Location: ${city} (${loc})`);
@@ -364,7 +360,7 @@ class FormatEngine {
 
 // --- Universal Hybrid Parser Engine ---
 class ParserEngine {
-  
+
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
     const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
@@ -387,7 +383,6 @@ class ParserEngine {
         throw new Error("date-fns-tz module not yet loaded");
       }
     } catch (e) {
-      console.warn(`Timezone parsing failed for ${ianaZone}, falling back to static offset.`);
       const naiveDate = new Date(Date.UTC(normYear, normMonth, normDay, hours, minutes));
       return new Date(naiveDate.getTime() - (fallbackOffset * 60 * 60000));
     }
@@ -395,18 +390,18 @@ class ParserEngine {
 
   static parseRawText(rawText) {
     const events = [];
-    
+
     const headerText = rawText.substring(0, 500);
     let staffMatch = headerText.match(/Staff No\.:\s*(\d{6})/i);
     if (!staffMatch) {
       staffMatch = headerText.match(/\b(\d{6})\b/);
     }
     state.currentStaffNumber = staffMatch ? staffMatch[1] : 'UNKNOWN';
-    
+
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
     const monthNames = { JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5, JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11 };
-    
+
     const rangeMatch = rawText.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\s*to\s*\d{1,2}[-/.](\d{1,2})[-/.](\d{4})/i);
     if (rangeMatch) {
       currentMonth = parseInt(rangeMatch[2], 10) - 1;
@@ -515,27 +510,25 @@ class ParserEngine {
 
         const shouldAddReport = repTime && (
           state.preferences.includeReport === true ||
-          state.preferences.includeReport === 'ALL' || 
+          state.preferences.includeReport === 'ALL' ||
           (state.preferences.includeReport === 'HOME_ONLY' && origin === HOME_BASE) ||
           (state.preferences.includeReport === undefined && origin === HOME_BASE)
         );
 
         if (shouldAddReport) {
-          // El Rep. time marca el final de la ventana de check-in (cierre del eGate)
           let repEndUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
 
           if (repEndUtc >= startUtc) {
             repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
           }
 
-          // La ventana de reporte inicia exactamente 1 hora antes del Rep. time
-          let repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000); 
-          
+          let repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
+
           const repEventDate = new Date(repStartUtc);
           const repDay = repEventDate.getUTCDate();
           const repMonth = repEventDate.getUTCMonth();
           const repYear = repEventDate.getUTCFullYear();
-          
+
           const ianaZone = origMeta?.iana || "Asia/Dubai";
           const repFormatter = new Intl.DateTimeFormat('en-GB', {
             timeZone: ianaZone,
@@ -543,7 +536,7 @@ class ParserEngine {
             minute: '2-digit',
             hour12: false
           });
-          
+
           const repStartTimeStr = repFormatter.format(repStartUtc).replace(':', '');
           const repEndTimeStr = repFormatter.format(repEndUtc).replace(':', '');
 
@@ -626,7 +619,7 @@ class ParserEngine {
           origin = locCode;
           dest = locCode;
           startTime = "1200";
-          endTime = "1200"; 
+          endTime = "1200";
         } else if (codeMeta.category === 'standby') {
           location = code.includes("A") || code.includes("Q") || code.includes("700") ? `Dubai Airport (${HOME_BASE})` : `Home Base (${HOME_BASE})`;
           const hourMatch = code.match(/^[A-Z]+(\d{2})/);
@@ -722,13 +715,13 @@ class ParserEngine {
     }
 
     events.sort((a, b) => a.startUtc - b.startUtc);
-    
+
     ParserEngine.detectGroundTimes(events);
     ParserEngine.enrichLayoverRest(events);
 
     SupabaseLogger.logCodes(events);
     SupabaseLogger.logEvents(events);
-    
+
     return events;
   }
 
@@ -744,25 +737,25 @@ class ParserEngine {
 
       if (inbound.destination !== HOME_BASE && inbound.destination === outbound.origin) {
         const diffMs = outbound.startUtc - inbound.endUtc;
-        
+
         if (diffMs > 0) {
           const isLayover = diffMs > 4 * 60 * 60 * 1000;
           const totalMins = Math.round(diffMs / (1000 * 60));
           const hours = Math.floor(totalMins / 60);
           const mins = totalMins % 60;
           const durationStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-          
-          const existingLayover = events.find(e => 
-            (e.category === 'layover' || e.category === 'turnaround') && 
+
+          const existingLayover = events.find(e =>
+            (e.category === 'layover' || e.category === 'turnaround') &&
             e.locationCode === inbound.destination &&
-            e.startUtc >= inbound.endUtc && 
+            e.startUtc >= inbound.endUtc &&
             e.endUtc <= outbound.startUtc
           );
 
           if (!existingLayover) {
             const startUtc = new Date(inbound.endUtc);
             const endUtc = new Date(outbound.startUtc);
-            
+
             const station = inbound.destination;
             const airport = state.airports[station] || BUILTIN_AIRPORTS[station];
             const city = airport?.city || station;
@@ -847,31 +840,31 @@ class ParserEngine {
       layovers.forEach(lay => {
         const station = lay.locationCode || (lay.rawText && lay.rawText.split(/\s+/)[1] ? lay.rawText.split(/\s+/)[1].toUpperCase() : null);
         if (!station || station === HOME_BASE) return;
-        
+
         const inbound = events
           .filter(e => e.category === 'flight' && e.destination === station && e.endUtc <= lay.startUtc)
           .sort((a, b) => b.endUtc - a.endUtc)[0];
-          
+
         const outbound = events
           .filter(e => (e.category === 'report' || e.category === 'flight') && e.origin === station && e.startUtc >= lay.startUtc)
           .sort((a, b) => a.startUtc - b.startUtc)[0];
-          
+
         if (inbound && outbound && inbound.endUtc && outbound.startUtc) {
           lay.startUtc = new Date(inbound.endUtc);
           lay.endUtc = new Date(outbound.startUtc);
           lay.isAllDay = false;
-          
+
           const diffMs = lay.endUtc - lay.startUtc;
           if (!isNaN(diffMs) && diffMs > 0) {
             const totalMins = Math.round(diffMs / (1000 * 60));
             const hours = Math.floor(totalMins / 60);
             const mins = totalMins % 60;
-            
+
             lay.restDuration = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
             const airport = state.airports[station] || BUILTIN_AIRPORTS[station];
             const city = airport?.city || station;
             lay.location = `${city} (${station}) — Station Rest (${lay.restDuration})`;
-            
+
             const formatLocal = (utcDate, locCode) => {
               try {
                 const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
@@ -923,7 +916,7 @@ class ICalGenerator {
         const nextDay = new Date(e.startUtc);
         nextDay.setUTCDate(nextDay.getUTCDate() + 1);
         const endOnly = ICalGenerator.formatDateOnly(nextDay);
-        
+
         lines.push(`DTSTART;VALUE=DATE:${startOnly}`);
         lines.push(`DTEND;VALUE=DATE:${endOnly}`);
       } else {
@@ -938,7 +931,6 @@ class ICalGenerator {
         "STATUS:CONFIRMED"
       );
 
-      // Inject VALARM block if reminder is active
       const alarmPref = state.preferences.alarmReminder;
       if (alarmPref && alarmPref !== "NONE") {
         lines.push(
@@ -1029,41 +1021,91 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Magic Mode Controller ---
   const urlParams = new URLSearchParams(window.location.search);
   const isMagicMode = urlParams.get('magic') === 'true';
+  const isEmbedded = window.self !== window.top;
 
   const standardUiView = document.getElementById('standard-ui-view');
   const magicModeView = document.getElementById('magic-mode-view');
   const magicBtnExport = document.getElementById('magic-btn-export');
+  const magicExportLabel = document.getElementById('magic-export-label');
+  const magicExportIcon = document.getElementById('magic-export-icon');
   const magicBtnReview = document.getElementById('magic-btn-review');
+  const btnBackMagic = document.getElementById('btn-back-magic');
   const magicBgBlur = document.getElementById('magic-bg-blur');
 
+  let lastMagicPayload = null;
+  let magicReadySignaled = false;
+
+  const signalMagicReady = () => {
+    if (magicReadySignaled) return;
+    magicReadySignaled = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (isEmbedded) {
+          window.parent.postMessage({ type: 'ROSTERCAL_MAGIC_READY' }, '*');
+        }
+        if (magicModeView) {
+          magicModeView.classList.add('magic-ready');
+        }
+      });
+    });
+  };
+
   if (isMagicMode && standardUiView && magicModeView) {
+    document.documentElement.classList.add('is-magic-mode', 'magic-transparent');
+    document.body.classList.add('magic-transparent');
     standardUiView.classList.add('hidden');
     magicModeView.classList.remove('hidden');
     magicModeView.classList.add('flex');
-    if (magicBgBlur) magicBgBlur.classList.remove('hidden');
-    
-    document.documentElement.classList.add('magic-transparent');
-    document.body.classList.add('magic-transparent');
+
+    // Only show internal blur layer when opened standalone; in bookmarklet mode the host page provides native blur
+    if (magicBgBlur && !isEmbedded) {
+      magicBgBlur.classList.remove('hidden');
+      signalMagicReady();
+    }
+
+    // Inform host bookmarklet that RosterCal is booted and ready to receive ROSTER_DATA silently
+    if (isEmbedded) {
+      window.parent.postMessage({ type: 'ROSTERCAL_BOOTED' }, '*');
+    }
+  }
+
+  // Click blurred area outside the glass sheet or press Escape to dismiss overlay
+  if (isMagicMode && magicModeView && isEmbedded) {
+    magicModeView.addEventListener('click', (e) => {
+      if (e.target === magicModeView) {
+        window.parent.postMessage({ type: 'ROSTERCAL_CLOSE' }, '*');
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        window.parent.postMessage({ type: 'ROSTERCAL_CLOSE' }, '*');
+      }
+    });
   }
 
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'ROSTER_DATA') {
       const rawText = event.data.text;
+      if (!rawText || rawText === lastMagicPayload) return;
+      lastMagicPayload = rawText;
+
       try {
         state.parsedEvents = ParserEngine.parseRawText(rawText);
+        if (rawInput) rawInput.value = rawText;
         updateFilterCounts();
         renderActiveView();
-        
+
         if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
-        
+        if (eventCount) eventCount.innerText = `${state.parsedEvents.length} EK events ready for calendar sync`;
+
         if (isMagicMode) {
           updateMagicStatistics();
-        } else {
-          if (rawInput) rawInput.value = rawText; 
+          signalMagicReady();
         }
       } catch (err) {
         console.error("Magic mode parsing error:", err);
         Toast.show("Failed to instantly parse roster. Please review manually.", "error");
+        if (isMagicMode) signalMagicReady();
       }
     }
   });
@@ -1074,17 +1116,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let turnaroundCount = 0;
     let offCount = 0;
     let totalMs = 0;
-    let totalEvents = state.parsedEvents.length;
+    const totalEvents = state.parsedEvents.length;
+    const destinations = [];
 
     const monthNamesLong = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthTitle = document.getElementById('magic-month-title');
-    if (monthTitle) monthTitle.innerText = `${monthNamesLong[state.currentMonth]} ${state.currentYear} Roster`;
+    if (monthTitle) monthTitle.innerText = `${monthNamesLong[state.currentMonth]} ${state.currentYear}`;
 
     state.parsedEvents.forEach(evt => {
       if (evt.category === 'flight') {
         flightCount++;
         if (evt.startUtc && evt.endUtc) {
           totalMs += (evt.endUtc - evt.startUtc);
+        }
+        if (evt.destination && evt.destination !== HOME_BASE && !destinations.includes(evt.destination)) {
+          destinations.push(evt.destination);
         }
       } else if (evt.category === 'layover') {
         layoverCount++;
@@ -1095,12 +1141,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // Update realistic aviation telemetry strip with live roster data
+    const destCodeEl = document.getElementById('magic-dest-code');
+    const destCityEl = document.getElementById('magic-dest-city');
+    const routeSummaryEl = document.getElementById('magic-route-summary');
+    const subtitleEl = document.getElementById('magic-subtitle');
+
+    if (destinations.length > 0) {
+      const primaryDest = destinations[0];
+      const destMeta = state.airports[primaryDest] || BUILTIN_AIRPORTS[primaryDest];
+      if (destCodeEl) destCodeEl.innerText = primaryDest;
+      if (destCityEl) destCityEl.innerText = destMeta?.city || primaryDest;
+      if (routeSummaryEl) {
+        routeSummaryEl.innerText = destinations.length === 1
+          ? `1 Destination · ${primaryDest}`
+          : `${destinations.length} Destinations · ${destinations.slice(0, 3).join(' · ')}`;
+      }
+    } else if (routeSummaryEl) {
+      routeSummaryEl.innerText = totalEvents > 0 ? `${totalEvents} Duties Verified` : "No Duties Detected";
+    }
+
+    if (subtitleEl && totalEvents > 0) {
+      subtitleEl.innerText = `${totalEvents} calendar events verified with DST-aware airport timezones.`;
+    }
+
     const blockHours = Math.floor(totalMs / (1000 * 60 * 60));
-    
-    const animateValue = (id, endValue, suffix = '', duration = 1200, delayMs = 0) => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const animateValue = (id, endValue, suffix = '', duration = 760, delayMs = 0) => {
       const obj = document.getElementById(id);
       if (!obj) return;
-      
+
+      if (prefersReducedMotion || endValue === 0) {
+        obj.innerText = endValue + suffix;
+        return;
+      }
+
       obj.innerText = "0" + suffix;
 
       setTimeout(() => {
@@ -1108,8 +1184,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const step = (timestamp) => {
           if (!startTimestamp) startTimestamp = timestamp;
           const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-          const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-          obj.innerText = Math.floor(easeProgress * endValue) + suffix;
+          const easeProgress = 1 - Math.pow(1 - progress, 3);
+          obj.innerText = Math.round(easeProgress * endValue) + suffix;
           if (progress < 1) {
             window.requestAnimationFrame(step);
           }
@@ -1118,26 +1194,46 @@ document.addEventListener("DOMContentLoaded", () => {
       }, delayMs);
     };
 
-    animateValue('stat-flights', flightCount, '', 1200, 800);
-    animateValue('stat-hours', blockHours, 'h', 1200, 900);
-    animateValue('stat-layovers', layoverCount, '', 1200, 1000);
-    animateValue('stat-turnarounds', turnaroundCount, '', 1200, 1100);
-    animateValue('stat-off', offCount, '', 1200, 1200);
-    animateValue('stat-events', totalEvents, '', 1200, 1300);
+    animateValue('stat-flights', flightCount, '', 720, 140);
+    animateValue('stat-hours', blockHours, 'h', 820, 180);
+    animateValue('stat-layovers', layoverCount, '', 720, 220);
+    animateValue('stat-turnarounds', turnaroundCount, '', 720, 260);
+    animateValue('stat-off', offCount, '', 720, 300);
+    animateValue('stat-events', totalEvents, '', 860, 340);
 
     if (magicBtnExport) {
       magicBtnExport.disabled = state.parsedEvents.length === 0;
     }
   }
 
+  let exportFeedbackTimer = null;
   if (magicBtnExport) {
     magicBtnExport.addEventListener('click', () => {
-      if (btnExport) btnExport.click(); 
+      if (btnExport) btnExport.click();
+
+      magicBtnExport.classList.add('is-exported');
+      if (magicExportLabel) magicExportLabel.innerText = "Calendar Exported (.ics)";
+      if (magicExportIcon) {
+        magicExportIcon.innerHTML = '<path d="M20 6 9 17l-5-5" />';
+      }
+
+      clearTimeout(exportFeedbackTimer);
+      exportFeedbackTimer = setTimeout(() => {
+        magicBtnExport.classList.remove('is-exported');
+        if (magicExportLabel) magicExportLabel.innerText = "Download .ics Calendar";
+        if (magicExportIcon) {
+          magicExportIcon.innerHTML = '<path d="M12 3v12" /><path d="m7 11 5 5 5-5" /><path d="M5 20h14" />';
+        }
+      }, 2400);
     });
   }
 
   if (magicBtnReview) {
     magicBtnReview.addEventListener('click', () => {
+      document.documentElement.classList.remove('is-magic-mode', 'magic-transparent');
+      document.body.classList.remove('magic-transparent');
+      if (isEmbedded) document.body.classList.add('magic-review-embedded');
+
       if (magicModeView) {
         magicModeView.classList.remove('flex');
         magicModeView.classList.add('hidden');
@@ -1145,13 +1241,30 @@ document.addEventListener("DOMContentLoaded", () => {
       if (standardUiView) {
         standardUiView.classList.remove('hidden');
       }
-      
+      if (btnBackMagic) {
+        btnBackMagic.classList.remove('hidden');
+        btnBackMagic.classList.add('flex');
+      }
+
       const leftCol = document.querySelector('.lg\\:col-span-5');
       const rightCol = document.querySelector('.lg\\:col-span-7');
       if (leftCol) leftCol.classList.add('hidden');
       if (rightCol) {
         rightCol.classList.replace('lg:col-span-7', 'lg:col-span-12');
         rightCol.classList.add('max-w-4xl', 'mx-auto', 'w-full');
+      }
+    });
+  }
+
+  if (btnBackMagic) {
+    btnBackMagic.addEventListener('click', () => {
+      document.documentElement.classList.add('is-magic-mode', 'magic-transparent');
+      document.body.classList.add('magic-transparent');
+      document.body.classList.remove('magic-review-embedded');
+      if (standardUiView) standardUiView.classList.add('hidden');
+      if (magicModeView) {
+        magicModeView.classList.remove('hidden');
+        magicModeView.classList.add('flex', 'magic-ready');
       }
     });
   }
@@ -1174,7 +1287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const target = e.currentTarget;
       target.classList.remove('bg-slate-900/90', 'text-slate-400', 'border-slate-700/80');
       target.classList.add('bg-blue-600', 'text-white', 'border-blue-500/50');
-      
+
       state.activeFilter = target.getAttribute('data-filter');
       renderTable();
     });
@@ -1224,9 +1337,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const prefReportTime = document.getElementById("pref-report-time");
   const prefFR24 = document.getElementById("pref-fr24-link");
   const prefAutoLayovers = document.getElementById("pref-auto-layovers");
-  const prefAlarmReminder = document.getElementById("pref-alarm-reminder"); // New Reminder Input
+  const prefAlarmReminder = document.getElementById("pref-alarm-reminder");
+  const previewFlight = document.getElementById("preview-flight-format");
+  const previewDuty = document.getElementById("preview-duty-format");
 
-  // Sync UI on load with Saved Preferences
   if (prefCalName) prefCalName.value = state.preferences.calendarName;
   if (prefFlightTitle) prefFlightTitle.value = state.preferences.flightTitleFormat;
   if (prefDutyTitle) prefDutyTitle.value = state.preferences.dutyTitleFormat;
@@ -1275,7 +1389,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (prefAutoLayovers) prefAutoLayovers.value = "true";
       if (prefFlightTitle) prefFlightTitle.value = "CITY_IATA";
       if (prefDutyTitle) prefDutyTitle.value = "EMOJI_TITLE";
-      if (prefAlarmReminder) prefAlarmReminder.value = "120"; // Default to 2 hours
+      if (prefAlarmReminder) prefAlarmReminder.value = "120";
       updateModalPreviews();
     });
   }
@@ -1293,14 +1407,14 @@ document.addEventListener("DOMContentLoaded", () => {
         alarmReminder: prefAlarmReminder?.value || "120"
       };
 
-      // Save to localStorage
       localStorage.setItem('rosterCalPrefs', JSON.stringify(state.preferences));
-      
+
       if (rawInput && rawInput.value.trim()) {
         try {
           state.parsedEvents = ParserEngine.parseRawText(rawInput.value);
           updateFilterCounts();
           if (eventCount) eventCount.innerText = `${state.parsedEvents.length} EK events ready for calendar sync`;
+          if (isMagicMode) updateMagicStatistics();
         } catch (e) { console.error("Reparse error:", e); }
       }
 
@@ -1373,7 +1487,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Toast.show("Please paste your Emirates roster text first.", "error");
         return;
       }
-      
+
       try {
         state.parsedEvents = ParserEngine.parseRawText(text);
       } catch (err) {
@@ -1385,7 +1499,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         updateFilterCounts();
         renderActiveView();
-        
+
         if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
         if (eventCount) eventCount.innerText = `${state.parsedEvents.length} EK events ready for calendar sync`;
       } catch (uiErr) {
@@ -1426,7 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (evt.category === 'standby' || evt.category === 'training') counts.training++;
       else if (counts[evt.category] !== undefined) counts[evt.category]++;
     });
-    
+
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
     setTxt("count-all", counts.ALL);
     setTxt("count-flight", counts.flight);
@@ -1447,7 +1561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTable() {
     if (!tableBody) return;
     tableBody.innerHTML = "";
-    
+
     const filteredEvents = state.parsedEvents.filter(evt => {
       if (state.activeFilter === 'ALL') return true;
       if (state.activeFilter === 'training') return evt.category === 'training' || evt.category === 'standby';
@@ -1463,7 +1577,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.className = (evt.enabled ? "hover:bg-slate-800/40 transition" : "opacity-40 bg-slate-950/40 transition") + " animate-fade-in";
       tr.style.animationDelay = `${Math.min(index * 20, 350)}ms`;
-      
+
       const formatTime = (utcDate) => {
         if (!utcDate || isNaN(utcDate.getTime())) return "--:--";
         if (state.timezoneMode === 'UTC') return utcDate.toISOString().slice(11, 16) + " Z";
