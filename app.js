@@ -1,7 +1,7 @@
 /**
  * RosterCal — Emirates (EK) Cabin Crew Edition
  * Architecture: ES6 Modular Classes | 100% Client-Side Privacy
- * Features: Zero-Latency Instant Boot | DST-Aware Timezones | Surrogate-Safe iCal Folding | Custom Emojis | PWA Support
+ * Features: Zero-Latency Instant Boot | Native DST-Aware Timezones | Deterministic iCal UIDs | Custom Emojis | PWA Support
  * UI Enhanced with Apple Design Principles
  */
 
@@ -14,6 +14,12 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const HOME_BASE = "DXB";
 const HOME_UTC_OFFSET = 4; // UAE Standard Time (No DST)
+const MONTH_NAMES_SHORT = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const NON_AIRPORT_TOKENS = new Set([
+  "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN",
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+  "UTC", "GMT", "LOC", "STD", "STA", "ETD", "ETA", "DUT", "FLT", "OFF"
+]);
 
 // --- Global App State (Instant Memory Ready) ---
 class AppState {
@@ -21,6 +27,7 @@ class AppState {
     this.airports = { ...BUILTIN_AIRPORTS };
     this.eventCodes = { ...BUILTIN_EVENT_CODES };
     this.parsedEvents = [];
+    this.unknownAirports = [];
     this.timezoneMode = 'LOCAL';
     this.activeView = 'list';
     this.activeFilter = 'ALL';
@@ -142,16 +149,23 @@ class Toast {
     }
 
     const toast = document.createElement('div');
-    const isError = type === 'error';
+    const styleMap = {
+      error: 'bg-red-950/90 border-red-500/50 text-red-200',
+      warning: 'bg-amber-950/90 border-amber-500/50 text-amber-200',
+      success: 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
+    };
+    const iconMap = {
+      error: '⚠️',
+      warning: '⚠️',
+      success: '✅'
+    };
 
     toast.className = `flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-2xl border backdrop-blur-md transition-all duration-300 transform translate-y-10 opacity-0 ${
-      isError
-        ? 'bg-red-950/90 border-red-500/50 text-red-200'
-        : 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
+      styleMap[type] || styleMap.error
     }`;
 
     toast.innerHTML = `
-      <span class="text-base">${isError ? '⚠️' : '✅'}</span>
+      <span class="text-base">${iconMap[type] || '⚠️'}</span>
       <span class="text-xs font-bold tracking-tight uppercase">${message}</span>
     `;
 
@@ -166,7 +180,7 @@ class Toast {
       toast.classList.remove('translate-y-0', 'opacity-100');
       toast.classList.add('translate-y-10', 'opacity-0');
       setTimeout(() => toast.remove(), 300);
-    }, 3500);
+    }, type === 'warning' ? 5000 : 3500);
   }
 }
 
@@ -237,6 +251,11 @@ class FormatEngine {
         const endL = evt.endTime ? evt.endTime.replace(/(\d{2})(\d{2})/, '$1:$2') : '--:--';
         lines.push(`🛫 Departure: ${startL} Local (${evt.origin})`);
         lines.push(`🛬 Arrival:   ${endL} Local (${evt.destination})`);
+      }
+
+      if (!origMeta || !destMeta) {
+        const missing = [!origMeta ? evt.origin : null, !destMeta ? evt.destination : null].filter(Boolean).join(', ');
+        lines.push(`⚠️ Timezone Warning: Unlisted airport (${missing}) — verify local time offset.`);
       }
 
       const showReport = state.preferences.includeReport === true ||
@@ -361,8 +380,48 @@ class FormatEngine {
 // --- Universal Hybrid Parser Engine ---
 class ParserEngine {
 
+  static isValidHHMM(timeStr) {
+    if (!timeStr) return false;
+    const clean = String(timeStr).replace('+1', '').replace(':', '');
+    if (!/^\d{4}$/.test(clean)) return false;
+    const hh = parseInt(clean.slice(0, 2), 10);
+    const mm = parseInt(clean.slice(2, 4), 10);
+    return hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59;
+  }
+
+  /**
+   * Computes exact UTC offset in ms (local - UTC) for a given UTC Date in an IANA zone.
+   */
+  static getTimeZoneOffsetMs(utcDate, ianaZone) {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: ianaZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23'
+    });
+    const parts = dtf.formatToParts(utcDate);
+    const map = {};
+    for (const p of parts) {
+      if (p.type !== 'literal') map[p.type] = parseInt(p.value, 10);
+    }
+    const hour = map.hour === 24 ? 0 : map.hour;
+    const asUtc = Date.UTC(map.year, map.month - 1, map.day, hour, map.minute, map.second);
+    const utcTrunc = utcDate.getTime() - (utcDate.getTime() % 1000);
+    return asUtc - utcTrunc;
+  }
+
+  /**
+   * Native DST-aware conversion from airport wall-clock time to exact UTC Date.
+   * Uses a two-pass offset resolution so DST transitions are handled accurately offline.
+   */
   static parseToUtcDate(year, monthIndex, day, timeStr, locationCode = HOME_BASE) {
-    const cleanTime = (timeStr || "0000").replace('+1', '').replace(':', '');
+    const rawStr = String(timeStr || "0000");
+    const dayShift = /\+1/.test(rawStr) ? 1 : 0;
+    const cleanTime = rawStr.replace('+1', '').replace(':', '');
     const hours = parseInt(cleanTime.slice(0, 2), 10) || 0;
     const minutes = parseInt(cleanTime.slice(2, 4), 10) || 0;
 
@@ -370,26 +429,111 @@ class ParserEngine {
     const ianaZone = airport?.iana || "Asia/Dubai";
     const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
 
-    const normalizedDate = new Date(year, monthIndex, day);
-    const normYear = normalizedDate.getFullYear();
-    const normMonth = normalizedDate.getMonth();
-    const normDay = normalizedDate.getDate();
+    // Normalize calendar date in UTC so browser's local timezone never skews date rollovers
+    const normalized = new Date(Date.UTC(year, monthIndex, day + dayShift));
+    const normYear = normalized.getUTCFullYear();
+    const normMonth = normalized.getUTCMonth();
+    const normDay = normalized.getUTCDate();
+
+    const targetAsUtc = Date.UTC(normYear, normMonth, normDay, hours, minutes, 0);
 
     try {
-      if (window.zonedTimeToUtc) {
-        const localString = `${normYear}-${String(normMonth + 1).padStart(2, '0')}-${String(normDay).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
-        return window.zonedTimeToUtc(localString, ianaZone);
-      } else {
-        throw new Error("date-fns-tz module not yet loaded");
+      const offset1 = ParserEngine.getTimeZoneOffsetMs(new Date(targetAsUtc), ianaZone);
+      let utcCandidate = targetAsUtc - offset1;
+      const offset2 = ParserEngine.getTimeZoneOffsetMs(new Date(utcCandidate), ianaZone);
+      if (offset2 !== offset1) {
+        utcCandidate = targetAsUtc - offset2;
       }
+      return new Date(utcCandidate);
     } catch (e) {
-      const naiveDate = new Date(Date.UTC(normYear, normMonth, normDay, hours, minutes));
-      return new Date(naiveDate.getTime() - (fallbackOffset * 60 * 60000));
+      return new Date(targetAsUtc - (fallbackOffset * 60 * 60000));
     }
+  }
+
+  /**
+   * Extracts local calendar date & HHMM time in the station's IANA timezone.
+   * Prevents UTC midnight rollovers from placing events on the wrong day in Month View.
+   */
+  static getLocalDateParts(utcDate, locationCode = HOME_BASE) {
+    const airport = state.airports[locationCode] || BUILTIN_AIRPORTS[locationCode];
+    const ianaZone = airport?.iana || "Asia/Dubai";
+
+    try {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone: ianaZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      });
+      const parts = dtf.formatToParts(utcDate);
+      const map = {};
+      for (const p of parts) {
+        if (p.type !== 'literal') map[p.type] = parseInt(p.value, 10);
+      }
+      const hour = map.hour === 24 ? 0 : map.hour;
+      const year = map.year;
+      const month = map.month - 1;
+      const day = map.day;
+      return {
+        year,
+        month,
+        day,
+        timeStr: `${String(hour).padStart(2, '0')}${String(map.minute).padStart(2, '0')}`,
+        dateStr: `${String(day).padStart(2, '0')} ${MONTH_NAMES_SHORT[month]}`
+      };
+    } catch (e) {
+      const fallbackOffset = airport?.utc_offset !== undefined ? airport.utc_offset : HOME_UTC_OFFSET;
+      const shifted = new Date(utcDate.getTime() + fallbackOffset * 3600000);
+      const year = shifted.getUTCFullYear();
+      const month = shifted.getUTCMonth();
+      const day = shifted.getUTCDate();
+      return {
+        year,
+        month,
+        day,
+        timeStr: `${String(shifted.getUTCHours()).padStart(2, '0')}${String(shifted.getUTCMinutes()).padStart(2, '0')}`,
+        dateStr: `${String(day).padStart(2, '0')} ${MONTH_NAMES_SHORT[month]}`
+      };
+    }
+  }
+
+  /**
+   * Assigns stable, deterministic IDs (used as iCal UIDs) so re-importing updated rosters
+   * updates existing calendar events cleanly instead of creating duplicates.
+   */
+  static assignDeterministicIds(events) {
+    const seen = new Map();
+    const clean = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    events.forEach(evt => {
+      const y = evt.uidYear ?? evt.year;
+      const m = evt.uidMonth ?? evt.month;
+      const d = evt.uidDay ?? evt.day;
+      const dateKey = `${y}${String(m + 1).padStart(2, '0')}${String(d).padStart(2, '0')}`;
+
+      let baseId;
+      if (evt.category === 'flight') {
+        baseId = `ek-flt-${dateKey}-${clean(evt.flightNum)}-${clean(evt.origin)}-${clean(evt.destination)}`;
+      } else if (evt.category === 'report') {
+        baseId = `ek-rep-${dateKey}-${clean(evt.flightNum)}-${clean(evt.origin)}`;
+      } else if (evt.category === 'layover' || evt.category === 'turnaround') {
+        baseId = `ek-${evt.category === 'layover' ? 'lay' : 'turn'}-${dateKey}-${clean(evt.locationCode || evt.origin)}`;
+      } else {
+        baseId = `ek-duty-${dateKey}-${clean(evt.code)}`;
+      }
+
+      const count = seen.get(baseId) || 0;
+      seen.set(baseId, count + 1);
+      evt.id = count === 0 ? baseId : `${baseId}-${count + 1}`;
+    });
   }
 
   static parseRawText(rawText) {
     const events = [];
+    const unknownAirportsSet = new Set();
 
     const headerText = rawText.substring(0, 500);
     let staffMatch = headerText.match(/Staff No\.:\s*(\d{6})/i);
@@ -435,7 +579,10 @@ class ParserEngine {
       });
     }
 
-    if (dayMarkers.length === 0) return events;
+    if (dayMarkers.length === 0) {
+      state.unknownAirports = [];
+      return events;
+    }
 
     let activeMonth = currentMonth;
     let activeYear = currentYear;
@@ -457,36 +604,48 @@ class ParserEngine {
       const nextIndex = (i + 1 < dayMarkers.length) ? dayMarkers[i + 1].index : rawText.length;
       const chunkText = rawText.substring(currentMarker.index, nextIndex).trim();
 
-      const sectorRegex = /(?:(\d{2}:\d{2}|\d{4})\s*)?(?:EK)?(\d{1,4}(?:-[A-Z])?)\s*([A-Z]{3})\s*(\d{2}:\d{2}|\d{4})\s*([A-Z]{3})\s*(\d{2}:\d{2}|\d{4})/gi;
+      const sectorRegex = /(?:(\d{2}:\d{2}|\d{4})\s*)?(EK)?(\d{1,4}(?:-[A-Z])?)\s*([A-Z]{3})\s*(\d{2}:\d{2}|\d{4})\s*([A-Z]{3})\s*(\d{2}:\d{2}|\d{4})/gi;
       let sectorMatch;
       let foundSector = false;
 
       while ((sectorMatch = sectorRegex.exec(chunkText)) !== null) {
         const rawRepTime = sectorMatch[1];
-        const rawFlightNum = sectorMatch[2];
-        const origin = sectorMatch[3].toUpperCase();
-        const depTimeStr = sectorMatch[4].replace(':', '');
-        const dest = sectorMatch[5].toUpperCase();
-        const arrTimeStr = sectorMatch[6].replace(':', '');
+        const hasEkPrefix = !!sectorMatch[2];
+        const rawFlightNum = sectorMatch[3];
+        const origin = sectorMatch[4].toUpperCase();
+        const depTimeStr = sectorMatch[5].replace(':', '');
+        const dest = sectorMatch[6].toUpperCase();
+        const arrTimeStr = sectorMatch[7].replace(':', '');
+
+        // Validate departure & arrival HHMM values to eliminate non-time false positives
+        if (!ParserEngine.isValidHHMM(depTimeStr) || !ParserEngine.isValidHHMM(arrTimeStr)) continue;
 
         const origMeta = state.airports[origin] || BUILTIN_AIRPORTS[origin];
         const destMeta = state.airports[dest] || BUILTIN_AIRPORTS[dest];
-        if (!origMeta || !destMeta) continue;
+
+        // Avoid discarding flights to newly opened/unlisted airports while blocking non-airport tokens
+        if (!origMeta || !destMeta) {
+          if (NON_AIRPORT_TOKENS.has(origin) || NON_AIRPORT_TOKENS.has(dest)) continue;
+          if (!origMeta && !destMeta && !hasEkPrefix) continue;
+          if (!origMeta) unknownAirportsSet.add(origin);
+          if (!destMeta) unknownAirportsSet.add(dest);
+        }
 
         foundSector = true;
         const flightNum = rawFlightNum.toUpperCase().startsWith("EK") ? rawFlightNum.toUpperCase() : `EK${rawFlightNum.toUpperCase()}`;
         const destCity = destMeta ? destMeta.city : dest;
-        const repTime = rawRepTime ? rawRepTime.replace(':', '') : null;
+        const repTime = (rawRepTime && ParserEngine.isValidHHMM(rawRepTime)) ? rawRepTime.replace(':', '') : null;
 
         const startUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, depTimeStr, origin);
-        const endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, arrTimeStr, dest);
+        let endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, arrTimeStr, dest);
 
+        // Recalculate on day + 1 instead of adding 24h UTC so DST transitions stay exact
         if (endUtc < startUtc) {
-          endUtc.setUTCDate(endUtc.getUTCDate() + 1);
+          endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay + 1, arrTimeStr, dest);
         }
 
         const flightEvent = {
-          id: `ek-flt-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+          id: "",
           enabled: true,
           code: "FLT",
           flightNum: flightNum,
@@ -499,7 +658,7 @@ class ParserEngine {
           day: currentDay,
           month: activeMonth,
           year: activeYear,
-          dateStr: `${String(currentDay).padStart(2, '0')} ${Object.keys(monthNames)[activeMonth]}`,
+          dateStr: `${String(currentDay).padStart(2, '0')} ${MONTH_NAMES_SHORT[activeMonth]}`,
           category: "flight",
           isAllDay: false,
           startUtc: startUtc,
@@ -518,48 +677,41 @@ class ParserEngine {
         if (shouldAddReport) {
           let repEndUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay, repTime, origin);
 
+          // Recalculate on day - 1 in station timezone so overnight reports across DST stay exact
           if (repEndUtc >= startUtc) {
-            repEndUtc.setUTCDate(repEndUtc.getUTCDate() - 1);
+            repEndUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, currentDay - 1, repTime, origin);
           }
 
-          let repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
+          const repStartUtc = new Date(repEndUtc.getTime() - 60 * 60 * 1000);
 
-          const repEventDate = new Date(repStartUtc);
-          const repDay = repEventDate.getUTCDate();
-          const repMonth = repEventDate.getUTCMonth();
-          const repYear = repEventDate.getUTCFullYear();
-
-          const ianaZone = origMeta?.iana || "Asia/Dubai";
-          const repFormatter = new Intl.DateTimeFormat('en-GB', {
-            timeZone: ianaZone,
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          });
-
-          const repStartTimeStr = repFormatter.format(repStartUtc).replace(':', '');
-          const repEndTimeStr = repFormatter.format(repEndUtc).replace(':', '');
+          // Use station local date (not UTC) so early-morning DXB reports land on the right calendar day
+          const repStartLocal = ParserEngine.getLocalDateParts(repStartUtc, origin);
+          const repEndLocal = ParserEngine.getLocalDateParts(repEndUtc, origin);
 
           const reportEvent = {
-            id: `ek-rep-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+            id: "",
             enabled: true,
             code: "REP",
             flightNum: flightNum,
             origin: origin,
             destination: origin,
             location: `${origMeta?.city || origin} (${origin}) - Crew Check-in / eGate`,
-            startTime: repStartTimeStr,
-            endTime: repEndTimeStr,
-            day: repDay,
-            month: repMonth,
-            year: repYear,
-            dateStr: `${String(repDay).padStart(2, '0')} ${Object.keys(monthNames)[repMonth]}`,
+            startTime: repStartLocal.timeStr,
+            endTime: repEndLocal.timeStr,
+            day: repStartLocal.day,
+            month: repStartLocal.month,
+            year: repStartLocal.year,
+            // Tie report UID date to its parent flight date so slight midnight shifts update instead of duplicating
+            uidDay: currentDay,
+            uidMonth: activeMonth,
+            uidYear: activeYear,
+            dateStr: repStartLocal.dateStr,
             category: "report",
             emoji: "🕒",
             isAllDay: false,
             startUtc: repStartUtc,
             endUtc: repEndUtc,
-            rawText: `Check-in window: ${repStartTimeStr} to ${repEndTimeStr} for ${flightNum}`
+            rawText: `Check-in window: ${repStartLocal.timeStr} to ${repEndLocal.timeStr} for ${flightNum}`
           };
           events.push(reportEvent);
         }
@@ -655,8 +807,9 @@ class ParserEngine {
         location = `Dubai (${HOME_BASE})`;
       }
 
+      // Capturing both start & end day while avoiding false matches inside HHMM times or DD-MM-YYYY dates
       let spanDays = 1;
-      const dayRangeMatch = chunkText.match(/(?:0[1-9]|[12][0-9]|3[01])\s*[-–to]+\s*(0[1-9]|[12][0-9]|3[01])/i);
+      const dayRangeMatch = cleanChunk.match(/(?<![\d:-])(0[1-9]|[12][0-9]|3[01])(?:\s*[-–]\s*|\s+to\s+)(0[1-9]|[12][0-9]|3[01])(?![\d:-])/i);
       if (dayRangeMatch) {
         const startD = parseInt(dayRangeMatch[1], 10);
         const endD = parseInt(dayRangeMatch[2], 10);
@@ -671,32 +824,35 @@ class ParserEngine {
       }
 
       for (let dOffset = 0; dOffset < spanDays; dOffset++) {
-        const targetDay = currentDay + dOffset;
+        // Normalize rolled-over dates in UTC so multi-day duties crossing month-end keep valid day/month/year
+        const normDate = new Date(Date.UTC(activeYear, activeMonth, currentDay + dOffset));
+        const normYear = normDate.getUTCFullYear();
+        const normMonth = normDate.getUTCMonth();
+        const normDay = normDate.getUTCDate();
+
         let startUtc, endUtc;
 
         if (isAllDay) {
-          startUtc = new Date(Date.UTC(activeYear, activeMonth, targetDay, 0, 0, 0));
-          endUtc = new Date(Date.UTC(activeYear, activeMonth, targetDay, 23, 59, 59));
+          startUtc = new Date(Date.UTC(normYear, normMonth, normDay, 0, 0, 0));
+          endUtc = new Date(Date.UTC(normYear, normMonth, normDay, 23, 59, 59));
         } else {
-          startUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, targetDay, startTime, origin);
-          endUtc = ParserEngine.parseToUtcDate(activeYear, activeMonth, targetDay, endTime, dest || origin);
+          startUtc = ParserEngine.parseToUtcDate(normYear, normMonth, normDay, startTime, origin);
+          endUtc = ParserEngine.parseToUtcDate(normYear, normMonth, normDay, endTime, dest || origin);
           if (codeMeta.category === 'layover' || endUtc < startUtc) {
-            endUtc.setUTCDate(endUtc.getUTCDate() + 1);
+            endUtc = ParserEngine.parseToUtcDate(normYear, normMonth, normDay + 1, endTime, dest || origin);
           }
         }
 
-        const visualNormDate = new Date(activeYear, activeMonth, targetDay);
-
         const event = {
-          id: `ek-duty-${Date.now()}-${i}-${dOffset}-${Math.random().toString(36).substr(2, 4)}`,
+          id: "",
           enabled: true,
           code: code,
           emoji: codeMeta.emoji,
           rawTitle: codeMeta.title,
-          day: targetDay,
-          month: activeMonth,
-          year: activeYear,
-          dateStr: `${String(visualNormDate.getDate()).padStart(2, '0')} ${Object.keys(monthNames)[visualNormDate.getMonth()]}`,
+          day: normDay,
+          month: normMonth,
+          year: normYear,
+          dateStr: `${String(normDay).padStart(2, '0')} ${MONTH_NAMES_SHORT[normMonth]}`,
           origin: origin,
           destination: dest,
           locationCode: locCode,
@@ -718,6 +874,9 @@ class ParserEngine {
 
     ParserEngine.detectGroundTimes(events);
     ParserEngine.enrichLayoverRest(events);
+    ParserEngine.assignDeterministicIds(events);
+
+    state.unknownAirports = Array.from(unknownAirportsSet);
 
     SupabaseLogger.logCodes(events);
     SupabaseLogger.logEvents(events);
@@ -760,39 +919,27 @@ class ParserEngine {
             const airport = state.airports[station] || BUILTIN_AIRPORTS[station];
             const city = airport?.city || station;
 
-            const formatLocal = (utcDate, locCode) => {
-              try {
-                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
-                const ianaZone = airportMeta?.iana || "Asia/Dubai";
-                const formatter = new Intl.DateTimeFormat('en-GB', {
-                  timeZone: ianaZone,
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                });
-                return formatter.format(utcDate).replace(':', '');
-              } catch (e) { return "--:--"; }
-            };
-
-            const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            // Use local station date/time (not UTC) for calendar placement and display
+            const startLocal = ParserEngine.getLocalDateParts(startUtc, station);
+            const endLocal = ParserEngine.getLocalDateParts(endUtc, station);
 
             if (isLayover) {
               groundEvents.push({
-                id: `ek-auto-layover-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                id: "",
                 enabled: true,
                 code: "LAY",
                 emoji: "🏨",
                 rawTitle: "Layover",
-                day: startUtc.getUTCDate(),
-                month: startUtc.getUTCMonth(),
-                year: startUtc.getUTCFullYear(),
-                dateStr: `${String(startUtc.getUTCDate()).padStart(2, '0')} ${monthNames[startUtc.getUTCMonth()]}`,
+                day: startLocal.day,
+                month: startLocal.month,
+                year: startLocal.year,
+                dateStr: startLocal.dateStr,
                 origin: station,
                 destination: station,
                 locationCode: station,
                 location: `${city} (${station}) — Layover (${durationStr})`,
-                startTime: formatLocal(startUtc, station),
-                endTime: formatLocal(endUtc, station),
+                startTime: startLocal.timeStr,
+                endTime: endLocal.timeStr,
                 category: "layover",
                 isAllDay: false,
                 startUtc: startUtc,
@@ -802,21 +949,21 @@ class ParserEngine {
               });
             } else {
               groundEvents.push({
-                id: `ek-auto-turnaround-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                id: "",
                 enabled: true,
                 code: "TURN",
                 emoji: "🔄",
                 rawTitle: "Turnaround",
-                day: startUtc.getUTCDate(),
-                month: startUtc.getUTCMonth(),
-                year: startUtc.getUTCFullYear(),
-                dateStr: `${String(startUtc.getUTCDate()).padStart(2, '0')} ${monthNames[startUtc.getUTCMonth()]}`,
+                day: startLocal.day,
+                month: startLocal.month,
+                year: startLocal.year,
+                dateStr: startLocal.dateStr,
                 origin: station,
                 destination: station,
                 locationCode: station,
                 location: `${city} (${station}) — Turnaround (${durationStr})`,
-                startTime: formatLocal(startUtc, station),
-                endTime: formatLocal(endUtc, station),
+                startTime: startLocal.timeStr,
+                endTime: endLocal.timeStr,
                 category: "turnaround",
                 isAllDay: false,
                 startUtc: startUtc,
@@ -854,6 +1001,15 @@ class ParserEngine {
           lay.endUtc = new Date(outbound.startUtc);
           lay.isAllDay = false;
 
+          const startLocal = ParserEngine.getLocalDateParts(lay.startUtc, station);
+          const endLocal = ParserEngine.getLocalDateParts(lay.endUtc, station);
+          lay.day = startLocal.day;
+          lay.month = startLocal.month;
+          lay.year = startLocal.year;
+          lay.dateStr = startLocal.dateStr;
+          lay.startTime = startLocal.timeStr;
+          lay.endTime = endLocal.timeStr;
+
           const diffMs = lay.endUtc - lay.startUtc;
           if (!isNaN(diffMs) && diffMs > 0) {
             const totalMins = Math.round(diffMs / (1000 * 60));
@@ -864,22 +1020,6 @@ class ParserEngine {
             const airport = state.airports[station] || BUILTIN_AIRPORTS[station];
             const city = airport?.city || station;
             lay.location = `${city} (${station}) — Station Rest (${lay.restDuration})`;
-
-            const formatLocal = (utcDate, locCode) => {
-              try {
-                const airportMeta = state.airports[locCode] || BUILTIN_AIRPORTS[locCode];
-                const ianaZone = airportMeta?.iana || "Asia/Dubai";
-                const formatter = new Intl.DateTimeFormat('en-GB', {
-                  timeZone: ianaZone,
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                });
-                return formatter.format(utcDate).replace(':', '');
-              } catch (e) { return "--:--"; }
-            };
-            lay.startTime = formatLocal(lay.startUtc, station);
-            lay.endTime = formatLocal(lay.endUtc, station);
           }
         }
       });
@@ -892,6 +1032,9 @@ class ParserEngine {
 // --- iCal (.ics) Generator ---
 class ICalGenerator {
   static generate(events) {
+    // Monotonically increasing 32-bit revision number so calendar apps overwrite matching UIDs cleanly
+    const exportSequence = Math.max(1, Math.floor((Date.now() - 1700000000000) / 1000));
+
     const lines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -909,6 +1052,7 @@ class ICalGenerator {
 
       lines.push("BEGIN:VEVENT");
       lines.push(`UID:${e.id}@rostercal.ek`);
+      lines.push(`SEQUENCE:${exportSequence}`);
       lines.push(`DTSTAMP:${nowFormat}`);
 
       if (e.isAllDay) {
@@ -1018,6 +1162,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearOverlay = document.getElementById("clear-success-overlay");
   const btnClearBox = document.getElementById("btn-clear-box");
 
+  const notifyUnknownAirports = () => {
+    if (state.unknownAirports && state.unknownAirports.length > 0) {
+      Toast.show(`Unlisted airport(s): ${state.unknownAirports.join(', ')} — verify local timezones`, "warning");
+    }
+  };
+
   // --- Magic Mode Controller ---
   const urlParams = new URLSearchParams(window.location.search);
   const isMagicMode = urlParams.get('magic') === 'true';
@@ -1094,6 +1244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (rawInput) rawInput.value = rawText;
         updateFilterCounts();
         renderActiveView();
+        notifyUnknownAirports();
 
         if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
         if (eventCount) eventCount.innerText = `${state.parsedEvents.length} EK events ready for calendar sync`;
@@ -1499,6 +1650,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         updateFilterCounts();
         renderActiveView();
+        notifyUnknownAirports();
 
         if (btnExport) btnExport.disabled = state.parsedEvents.length === 0;
         if (eventCount) eventCount.innerText = `${state.parsedEvents.length} EK events ready for calendar sync`;
@@ -1524,12 +1676,14 @@ document.addEventListener("DOMContentLoaded", () => {
     btnExport.addEventListener("click", () => {
       const icsContent = ICalGenerator.generate(state.parsedEvents);
       const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      link.href = blobUrl;
       link.setAttribute("download", `${state.preferences.calendarName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.ics`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     });
   }
 
@@ -1573,19 +1727,37 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const formatTime = (utcDate, stationCode) => {
+      if (!utcDate || isNaN(utcDate.getTime())) return "--:--";
+      if (state.timezoneMode === 'UTC') return utcDate.toISOString().slice(11, 16) + " Z";
+
+      const airport = state.airports[stationCode] || BUILTIN_AIRPORTS[stationCode];
+      const ianaZone = airport?.iana || "Asia/Dubai";
+      try {
+        const formatted = new Intl.DateTimeFormat('en-GB', {
+          timeZone: ianaZone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).format(utcDate);
+        return formatted.startsWith('24:') ? '00:' + formatted.slice(3) : formatted;
+      } catch (e) {
+        return utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+    };
+
     filteredEvents.forEach((evt, index) => {
       const tr = document.createElement("tr");
       tr.className = (evt.enabled ? "hover:bg-slate-800/40 transition" : "opacity-40 bg-slate-950/40 transition") + " animate-fade-in";
       tr.style.animationDelay = `${Math.min(index * 20, 350)}ms`;
 
-      const formatTime = (utcDate) => {
-        if (!utcDate || isNaN(utcDate.getTime())) return "--:--";
-        if (state.timezoneMode === 'UTC') return utcDate.toISOString().slice(11, 16) + " Z";
-        return utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-      };
+      const startStation = evt.origin || evt.locationCode || HOME_BASE;
+      const endStation = (evt.category === 'flight' ? evt.destination : (evt.destination || evt.locationCode || evt.origin)) || HOME_BASE;
 
       const dynamicTitle = FormatEngine.getTitle(evt);
-      const timeDisplay = evt.isAllDay ? `<span class="bg-emerald-950/90 text-emerald-300 border border-emerald-800/60 px-1.5 py-0.5 rounded text-[10px] font-semibold">All Day (24h)</span>` : `${formatTime(evt.startUtc)} - ${formatTime(evt.endUtc)}`;
+      const timeDisplay = evt.isAllDay
+        ? `<span class="bg-emerald-950/90 text-emerald-300 border border-emerald-800/60 px-1.5 py-0.5 rounded text-[10px] font-semibold">All Day (24h)</span>`
+        : `${formatTime(evt.startUtc, startStation)} - ${formatTime(evt.endUtc, endStation)}`;
 
       tr.innerHTML = `
         <td class="py-2.5 px-2.5"><input type="checkbox" ${evt.enabled ? 'checked' : ''} data-id="${evt.id}" class="row-toggle rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 cursor-pointer w-4 h-4 btn"></td>
